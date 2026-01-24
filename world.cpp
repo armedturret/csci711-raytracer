@@ -13,18 +13,11 @@ bool World::raycast(Ray ray, RaycastHit& hit, float minDistance) const
     for (auto o : objects)
     {
         RayIntersection intersection;
-        if (o->intersect(ray, intersection) && intersection.distance > minDistance)
+        if (o->intersect(ray, intersection) && intersection.distance >= minDistance)
         {
-            if (!foundObject)
+            if (!foundObject || intersection.distance < smallestDistance)
             {
                 foundObject = true;
-                smallestDistance = intersection.distance;
-                hit.hit = o;
-                hit.normal = intersection.normal;
-                hit.position = intersection.position;
-            }
-            else if (intersection.distance < smallestDistance)
-            {
                 smallestDistance = intersection.distance;
                 hit.hit = o;
                 hit.normal = intersection.normal;
