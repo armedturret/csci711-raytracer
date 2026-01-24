@@ -1,37 +1,38 @@
 #include <iostream>
 #include <glm/glm.hpp>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "world.h"
+#include "sphere.h"
+#include "camera.h"
 
 using namespace std;
 
 int main()
 {
-    cout << "Hello world!" << endl;
+    cout << "Setting up world..." << endl;
 
-    int width = 50, height = 50;
+    World w;
+    Material white = { glm::vec3(1.0f, 1.0f, 1.0f) };
+    Material red = { glm::vec3(1.0f, 0.0f, 0.0f) };
+    Material green = { glm::vec3(0.0f, 1.0f, 0.0f) };
+    Material blue = { glm::vec3(0.0f, 0.0f, 1.0f) };
+    
+    Sphere s1(red,
+        glm::vec3(1.014f, 0.805f, -0.829f),
+        0.5f);
+    Sphere s2(green,
+        glm::vec3(1.801f, 0.537f, -1.423f),
+        0.5f);
+    w.add(&s1);
+    w.add(&s2);
 
-    unsigned char* image = new unsigned char[width * height * 3]();
+    cout << "Rendering scene..." << endl;
 
-    for (int x = 0; x < width; x++)
-    {
-        for (int y = 0; y < height; y++)
-        {
-            if (x % 4 == y % 4)
-            {
-                image[(x + y * width) * 3] = 255;
-            }
-            else
-            {
-                image[(x + y * width) * 3 + 1] = 255;
-            }
-        }
-    }
-
-    stbi_write_png("output.png", width, height, 3, image, 3 * width);
-
-    delete[] image;
+    Camera c(glm::vec3(1.061f, 0.654f, 0.375f),
+        glm::vec3(1.061f, 0.654f, -1.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        0.1f);
+    c.render(w, "test_render.png", 500, 500);
 
     return 0;
 }

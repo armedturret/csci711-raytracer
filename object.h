@@ -8,5 +8,9 @@
 class Object
 {
 public:
-    std::vector<RayIntersection> intersect(Ray ray);
+    Object(Material m) : material(m) {}
+
+    virtual bool intersect(Ray ray, RayIntersection& out) = 0;
+
+    Material material;
 };

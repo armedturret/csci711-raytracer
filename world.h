@@ -13,7 +13,7 @@ struct RaycastHit
 class World
 {
 public:
-    void add(Object o);
+    void add(Object* o);
 
     bool raycast(Ray ray, RaycastHit& hit);
 };
