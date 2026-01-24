@@ -11,11 +11,13 @@ using namespace std;
 Camera::Camera(glm::vec3 position,
     glm::vec3 lookAt,
     glm::vec3 up,
+    glm::vec3 clearColor,
     float filmHeight,
     float focalLen) :
     position(position),
     lookAt(lookAt),
     up(up),
+    clearColor(clearColor),
     filmHeight(filmHeight),
     focalLen(focalLen)
 {
@@ -28,8 +30,6 @@ void Camera::render(const World& world,
 {
     auto viewTransform = glm::lookAt(position, lookAt, up);
     auto inverseViewTransform = glm::inverse(viewTransform);
-
-    glm::vec3 clearColor(0.0f, 0.0f, 0.0f);
 
     glm::vec3 testPos(0.0f, 0.0f, 1.0f);
     testPos = inverseViewTransform * glm::vec4(testPos, 1.0f);
