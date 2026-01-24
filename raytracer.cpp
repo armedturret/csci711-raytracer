@@ -31,9 +31,9 @@ int main()
     Camera c(glm::vec3(1.061f, 0.654f, 0.375f),
         glm::vec3(1.061f, 0.654f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
-        0.5f,
+        0.2f,
         0.1f);
-    c.render(w, "test_render.png", 500, 500);
+    c.render(w, "test_render.png", 960, 540);
 
     cout << "Rendering done! Press any key to continue" << endl;
 
