@@ -31,9 +31,6 @@ void Camera::render(const World& world,
     auto viewTransform = glm::lookAt(position, lookAt, up);
     auto inverseViewTransform = glm::inverse(viewTransform);
 
-    glm::vec3 testPos(0.0f, 0.0f, 1.0f);
-    testPos = inverseViewTransform * glm::vec4(testPos, 1.0f);
-
     auto image = vector<uint8_t>(width * height * 3);
     float pixelSize = filmHeight / (float)height;
     float filmWidth = filmHeight * (float)width / (float)height;
@@ -52,9 +49,12 @@ void Camera::render(const World& world,
             ray.direction = glm::vec3(
                 -filmWidth / 2.0f + pixelSize / 2.0f + (float)x * pixelSize,
                 filmHeight / 2.0f - pixelSize / 2.0f - (float)y * pixelSize,
-                -focalLen);
+                focalLen);
+            ray.direction = glm::normalize(ray.direction);
             ray.direction = glm::transpose(inverseViewTransform) * glm::vec4(ray.direction, 1.0f);
             ray.direction = glm::normalize(ray.direction);
+            // opengl standard is a little silly, need to spin the ray around
+            ray.direction.z *= -1;
 
             RaycastHit hit;
             if (world.raycast(ray, hit, focalLen))
