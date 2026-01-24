@@ -16,7 +16,7 @@ int main()
     Material red = { glm::vec3(1.0f, 0.0f, 0.0f) };
     Material green = { glm::vec3(0.0f, 1.0f, 0.0f) };
     Material blue = { glm::vec3(0.0f, 0.0f, 1.0f) };
-    
+
     Sphere s1(red,
         glm::vec3(1.014f, 0.805f, -0.829f),
         0.5f);
@@ -31,8 +31,14 @@ int main()
     Camera c(glm::vec3(1.061f, 0.654f, 0.375f),
         glm::vec3(1.061f, 0.654f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
+        0.5f,
         0.1f);
     c.render(w, "test_render.png", 500, 500);
+
+    cout << "Rendering done! Press any key to continue" << endl;
+
+    string a;
+    getline(cin, a);
 
     return 0;
 }

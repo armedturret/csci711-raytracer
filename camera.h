@@ -12,6 +12,7 @@ public:
     Camera(glm::vec3 position,
         glm::vec3 lookAt,
         glm::vec3 up,
+        float filmHeight,
         float focalLen = 1.0f);
 
     void render(const World& world, std::string filename, int width, int height);
@@ -19,5 +20,6 @@ public:
     glm::vec3 position;
     glm::vec3 lookAt;
     glm::vec3 up;
+    float filmHeight;
     float focalLen;
 };

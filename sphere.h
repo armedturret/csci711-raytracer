@@ -7,7 +7,7 @@ class Sphere : public Object
 public:
     Sphere(Material m, glm::vec3 center, float radius);
 
-    bool intersect(Ray ray, RayIntersection& out) override;
+    bool intersect(Ray ray, RayIntersection& out) const override;
 
     glm::vec3 center;
     float radius;

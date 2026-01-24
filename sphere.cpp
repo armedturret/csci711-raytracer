@@ -2,13 +2,14 @@
 
 using namespace std;
 
-Sphere::Sphere(Material m, glm::vec3 center, float radius):
+Sphere::Sphere(Material m, glm::vec3 center, float radius) :
     Object(m),
     center(center),
     radius(radius)
-{}
+{
+}
 
-bool Sphere::intersect(Ray ray, RayIntersection& out)
+bool Sphere::intersect(Ray ray, RayIntersection& out) const
 {
     // Assumes ray.direction is normalized so A = 1
     // Ray and the sphere should both be in world space
@@ -17,7 +18,7 @@ bool Sphere::intersect(Ray ray, RayIntersection& out)
 
     float b = 2.0f * glm::dot(ray.direction, ray.origin - center);
 
-    float c = glm::dot(ray.origin - center, ray.origin - center) + pow(radius, 2.0f);
+    float c = glm::dot(ray.origin - center, ray.origin - center) - pow(radius, 2.0f);
 
     float quad_term = pow(b, 2.0f) - 4.0f * c;
 
@@ -37,5 +38,6 @@ bool Sphere::intersect(Ray ray, RayIntersection& out)
 
     out.position = ray.origin + ray.direction * small_omega;
     out.normal = glm::normalize(out.position - center);
+    out.distance = small_omega;
     return true;
 }

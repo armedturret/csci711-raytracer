@@ -10,7 +10,13 @@ class Object
 public:
     Object(Material m) : material(m) {}
 
-    virtual bool intersect(Ray ray, RayIntersection& out) = 0;
+    /// <summary>
+    /// Returns the closest (non-negative) intersection
+    /// </summary>
+    /// <param name="ray"></param>
+    /// <param name="out"></param>
+    /// <returns></returns>
+    virtual bool intersect(Ray ray, RayIntersection& out) const = 0;
 
     Material material;
 };
