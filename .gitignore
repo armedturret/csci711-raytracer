@@ -43,6 +43,7 @@
 build/
 Build/
 build-*/
+out/
 
 # CMake generated files
 CMakeFiles/
@@ -83,3 +84,5 @@ CMakeUserPresets.json
 
 *.png
 *.jpg
+
+.vs/
