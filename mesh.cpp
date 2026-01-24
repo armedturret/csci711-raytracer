@@ -5,6 +5,11 @@ Mesh::Mesh(Material m, std::vector<glm::vec3> points, glm::mat4 modelT) :
     points(points),
     modelT(modelT)
 {
+    for (int i = 0; i < points.size(); i++)
+    {
+        // pre-bake transform so it's faster
+        this->points[i] = modelT * glm::vec4(points[i], 1.0f);
+    }
 }
 
 bool Mesh::intersect(Ray ray, RayIntersection& out) const
@@ -12,9 +17,9 @@ bool Mesh::intersect(Ray ray, RayIntersection& out) const
     bool foundIntersection = false;
     for (int i = 0; i < points.size(); i += 3)
     {
-        glm::vec3 p0 = modelT * glm::vec4(points[i], 1.0f);
-        glm::vec3 p1 = modelT * glm::vec4(points[i + 1], 1.0f);
-        glm::vec3 p2 = modelT * glm::vec4(points[i + 2], 1.0f);
+        glm::vec3 p0 = points[i];
+        glm::vec3 p1 = points[i + 1];
+        glm::vec3 p2 = points[i + 2];
 
         auto e1 = p1 - p0;
         auto e2 = p2 - p0;

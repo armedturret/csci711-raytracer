@@ -12,6 +12,7 @@ public:
 
     bool intersect(Ray ray, RayIntersection& out) const override;
 
+private:
     std::vector<glm::vec3> points;
     glm::mat4 modelT;
 };
