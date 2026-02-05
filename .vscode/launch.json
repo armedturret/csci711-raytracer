@@ -1,0 +1,13 @@
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "C/C++: g++ debug Raytracer",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${cwd}/build/Raytracer",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "CMake: build"
+        }
+    ]
+}
