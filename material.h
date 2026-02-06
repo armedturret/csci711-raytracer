@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-class RayIntersection;
+struct RayIntersection;
 
 class Material
 {

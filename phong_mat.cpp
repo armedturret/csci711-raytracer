@@ -21,10 +21,16 @@ void PhongMaterial::illuminate(RayIntersection* hit)
 
     for (auto l : hit->visibleLights)
     {
-        // diffuse TODO: FIX
+        // Diffuse
         glm::vec3 lightDir = glm::normalize(l->position - hit->position);
-        hit->irradiance += kd * l->color * color * glm::dot(lightDir, hit->normal);
+        glm::vec3 diff = l->color * color * glm::max(glm::dot(lightDir, hit->normal), 0.0f);
+        hit->irradiance += kd * diff;
 
-        // TODO: Specular
+        // Specular
+        // Reflect except ray inbound to point, returns ray outbound
+        glm::vec3 reflectDir = glm::reflect(-lightDir, hit->normal);
+        glm::vec3 view = -hit->incoming;
+        glm::vec3 spec = l->color * colorSpecular * glm::pow(glm::max(glm::dot(reflectDir, view), 0.0f), ke);
+        hit->irradiance += ks * spec;
     }
 }

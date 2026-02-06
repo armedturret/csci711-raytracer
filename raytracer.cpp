@@ -16,9 +16,7 @@ int main()
     cout << "Setting up world..." << endl;
 
     World w;
-    
     // Lights
-    // TODO: irradiance might need some tuning (competely fake units)
     Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f) };
     w.add(&pointLight);
 
@@ -29,8 +27,8 @@ int main()
     glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
     glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
-    PhongMaterial planeMat(yellow, white, 0.5f, 0.5f, 2.0f);
-    PhongMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 2.0f);
+    PhongMaterial planeMat(yellow, white, 0.5f, 0.5f, 1.0f);
+    PhongMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 5.0f);
 
     // Objects
     vector<glm::vec3> plane = {
