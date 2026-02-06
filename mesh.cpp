@@ -49,7 +49,7 @@ bool Mesh::intersect(Ray ray, RayIntersection& out) const
             foundIntersection = true;
             out.distance = omega;
             out.position = ray.origin + omega * ray.direction;
-            out.normal = glm::cross(e1, e2);
+            out.normal = glm::normalize(glm::cross(e1, e2));
         }
     }
 

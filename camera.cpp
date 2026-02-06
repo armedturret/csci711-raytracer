@@ -35,6 +35,9 @@ void Camera::render(const World& world,
     float pixelSize = filmHeight / (float)height;
     float filmWidth = filmHeight * (float)width / (float)height;
 
+    // adhoc conversion method
+    float maxIrradiance = 1.0f;
+
     for (int x = 0; x < width; x++)
     {
         for (int y = 0; y < height; y++)
@@ -60,8 +63,8 @@ void Camera::render(const World& world,
             if (world.raycast(ray, hit, false, focalLen))
             {
                 // Very simple tone production for now
-                // TODO: convert to min, max tone mapping
-                color = hit.irradiance;
+               color = hit.irradiance / maxIrradiance;
+               color = glm::clamp(color, 0.0f, 1.0f);
             }
 
             image[(x + y * width) * 3] = (uint8_t)(color.r * 255.0f);
