@@ -8,7 +8,7 @@
 class Object
 {
 public:
-    Object(Material m) : material(m) {}
+    Object(Material* material) : material(material) {}
 
     /// <summary>
     /// Returns the closest (non-negative) intersection
@@ -18,5 +18,5 @@ public:
     /// <returns></returns>
     virtual bool intersect(Ray ray, RayIntersection& out) const = 0;
 
-    Material material;
+    Material* material;
 };

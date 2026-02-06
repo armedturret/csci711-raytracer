@@ -6,6 +6,7 @@
 #include "sphere.h"
 #include "camera.h"
 #include "mesh.h"
+#include "phong_mat.h"
 
 using namespace std;
 
@@ -14,12 +15,17 @@ int main()
     cout << "Setting up world..." << endl;
 
     World w;
-    Material white = { glm::vec3(1.0f, 1.0f, 1.0f) };
-    Material red = { glm::vec3(1.0f, 0.0f, 0.0f) };
-    Material green = { glm::vec3(0.0f, 1.0f, 0.0f) };
-    Material blue = { glm::vec3(0.0f, 0.0f, 1.0f) };
-    Material yellow = { glm::vec3(0.949f, 1.0f, 0.0f) };
+    // Materials
+    glm::vec3 white = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 green = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
+    PhongMaterial planeMat(yellow, white, 0.5f, 0.5f, 2.0f);
+    PhongMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 2.0f);
+
+    // Objects
     vector<glm::vec3> plane = {
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 0.0f, -1.0f),
@@ -28,18 +34,19 @@ int main()
         glm::vec3(1.0f, 0.0f, -1.0f),
         glm::vec3(1.0f, 0.0f, 0.0f) };
 
-    Sphere s1({ glm::vec3(0.361f) },
+    Sphere s1(&sphereMat,
         glm::vec3(1.014f, 0.805f, -0.829f),
         0.5f);
-    Sphere s2({ glm::vec3(0.26f) },
+    Sphere s2(&sphereMat,
         glm::vec3(1.801f, 0.537f, -1.423f),
         0.5f);
     w.add(&s1);
     w.add(&s2);
 
-    Mesh m(yellow, plane, glm::scale(glm::mat4(1.0f), glm::vec3(4.0f)));
+    Mesh m(&planeMat, plane, glm::scale(glm::mat4(1.0f), glm::vec3(4.0f)));
     w.add(&m);
 
+    // Render scene
     cout << "Rendering scene..." << endl;
 
     Camera c(glm::vec3(1.061f, 0.654f, 0.375f),

@@ -8,7 +8,7 @@
 class Mesh : public Object
 {
 public:
-    Mesh(Material m, std::vector<glm::vec3> points, glm::mat4 modelT);
+    Mesh(Material* m, std::vector<glm::vec3> points, glm::mat4 modelT);
 
     bool intersect(Ray ray, RayIntersection& out) const override;
 

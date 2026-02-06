@@ -5,26 +5,42 @@ void World::add(Object* o)
     objects.push_back(o);
 }
 
-bool World::raycast(Ray ray, RaycastHit& hit, float minDistance) const
+void World::add(Light* l)
 {
-    bool foundObject = false;
-    float smallestDistance = 0.0f;
+    lights.push_back(l);
+}
+
+bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, float minDistance, float maxDistance) const
+{
+    hit.distance = 0.0f;
+    hit.incoming = ray.direction;
+    Object* closestObject = nullptr;
 
     for (auto o : objects)
     {
         RayIntersection intersection;
-        if (o->intersect(ray, intersection) && intersection.distance >= minDistance)
+        if (o->intersect(ray, intersection) && 
+            intersection.distance >= minDistance &&
+            (intersection.distance <= maxDistance || maxDistance <= 0.0f))
         {
-            if (!foundObject || intersection.distance < smallestDistance)
+            if (closestObject == nullptr || intersection.distance < hit.distance)
             {
-                foundObject = true;
-                smallestDistance = intersection.distance;
-                hit.hit = o;
+                hit.distance = intersection.distance;
                 hit.normal = intersection.normal;
                 hit.position = intersection.position;
+                closestObject = o;
+
+                if (terminateOnAnything)
+                    break;
             }
         }
     }
 
-    return foundObject;
+    if (!terminateOnAnything && closestObject)
+    {
+        // TODO: Calculate visible lights before calling this
+        closestObject->material->illuminate(&hit);
+    }
+
+    return closestObject != nullptr;
 }

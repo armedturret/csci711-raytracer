@@ -56,11 +56,12 @@ void Camera::render(const World& world,
             // opengl standard is a little silly, need to spin the ray around
             ray.direction.z *= -1;
 
-            RaycastHit hit;
-            if (world.raycast(ray, hit, focalLen))
+            RayIntersection hit;
+            if (world.raycast(ray, hit, false, focalLen))
             {
                 // Very simple tone production for now
-                color = hit.hit->material.color;
+                // TODO: convert to min, max tone mapping
+                color = hit.irradiance;
             }
 
             image[(x + y * width) * 3] = (uint8_t)(color.r * 255.0f);

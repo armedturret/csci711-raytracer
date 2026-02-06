@@ -1,6 +1,6 @@
 #include "mesh.h"
 
-Mesh::Mesh(Material m, std::vector<glm::vec3> points, glm::mat4 modelT) :
+Mesh::Mesh(Material* m, std::vector<glm::vec3> points, glm::mat4 modelT) :
     Object(m),
     points(points),
     modelT(modelT)

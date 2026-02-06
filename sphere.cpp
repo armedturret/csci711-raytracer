@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Sphere::Sphere(Material m, glm::vec3 center, float radius) :
+Sphere::Sphere(Material* m, glm::vec3 center, float radius) :
     Object(m),
     center(center),
     radius(radius)
