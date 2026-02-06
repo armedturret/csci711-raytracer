@@ -60,12 +60,7 @@ int main()
         glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540);
-
-    cout << "Rendering done! Press any key to continue" << endl;
-
-    string a;
-    getline(cin, a);
+    c.render(w, "test_render.png", 960, 540, false);
 
     return 0;
 }
