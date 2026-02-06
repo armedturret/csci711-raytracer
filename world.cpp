@@ -19,7 +19,7 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, flo
     for (auto o : objects)
     {
         RayIntersection intersection;
-        if (o->intersect(ray, intersection) && 
+        if (o->intersect(ray, intersection) &&
             intersection.distance >= minDistance &&
             (intersection.distance <= maxDistance || maxDistance <= 0.0f))
         {
@@ -48,7 +48,7 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, flo
             RayIntersection intersection;
             // Cast a ray from intersection point to a light and see if anything in between
             // Min distance is non-zero to prevent self intersection
-            if (!raycast(lightRay, intersection, true, 0.0001f, glm::distance(l->position, ray.origin)))
+            if (!raycast(lightRay, intersection, true, 0.00001f, glm::distance(l->position, lightRay.origin)))
             {
                 hit.visibleLights.push_back(l);
             }
