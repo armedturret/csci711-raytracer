@@ -31,14 +31,29 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, flo
                 closestObject = o;
 
                 if (terminateOnAnything)
-                    break;
+                    return true;
             }
         }
     }
 
     if (!terminateOnAnything && closestObject)
     {
-        // TODO: Calculate visible lights before calling this
+        Ray lightRay;
+        lightRay.origin = hit.position;
+        // Need to calculate visible lights first
+        for (auto l : lights)
+        {
+            lightRay.direction = glm::normalize(l->position - hit.position);
+
+            RayIntersection intersection;
+            // Cast a ray from intersection point to a light and see if anything in between
+            // Min distance is non-zero to prevent self intersection
+            if (!raycast(lightRay, intersection, true, 0.0001f, glm::distance(l->position, ray.origin)))
+            {
+                hit.visibleLights.push_back(l);
+            }
+        }
+
         closestObject->material->illuminate(&hit);
     }
 

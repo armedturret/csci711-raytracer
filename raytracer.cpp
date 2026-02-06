@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "mesh.h"
 #include "phong_mat.h"
+#include "light.h"
 
 using namespace std;
 
@@ -15,6 +16,12 @@ int main()
     cout << "Setting up world..." << endl;
 
     World w;
+    
+    // Lights
+    // TODO: irradiance might need some tuning (competely fake units)
+    Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    w.add(&pointLight);
+
     // Materials
     glm::vec3 white = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
