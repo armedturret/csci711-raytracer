@@ -5,6 +5,14 @@ void World::add(Object* o)
     objects.push_back(o);
 }
 
+void World::add(Mesh* m)
+{
+    // this is stupid since mesh could fall out of scope, but I don't care
+    for (int i = 0; i < m->getTriangles().size(); i++) {
+        objects.push_back(m->getTriangles()[i].get());
+    }
+}
+
 void World::add(Light* l)
 {
     lights.push_back(l);

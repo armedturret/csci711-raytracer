@@ -1,18 +1,23 @@
 #pragma once
 
-#include "object.h"
+#include "triangle.h"
+#include "material.h"
 
 #include <vector>
+#include <string>
+#include <memory>
 
-// This only supports triangular meshes
-class Mesh : public Object
+class Mesh
 {
 public:
-    Mesh(Material* m, std::vector<glm::vec3> points, glm::mat4 modelT);
+    Mesh(Material* m, const glm::mat4& modelT, std::vector<glm::vec3> points);
 
-    bool intersect(Ray ray, RayIntersection& out) const override;
+    Mesh(Material* m, const glm::mat4& modelT, std::string filePath);
 
+    const std::vector<std::unique_ptr<Triangle>>& getTriangles() { return triangles; }
 private:
-    std::vector<glm::vec3> points;
-    glm::mat4 modelT;
+    void init(const glm::mat4& modelT, const std::vector<glm::vec3>& points);
+
+    std::vector<std::unique_ptr<Triangle>> triangles;
+    Material* m;
 };

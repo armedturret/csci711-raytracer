@@ -1,6 +1,7 @@
 #pragma once
 
 #include "object.h"
+#include "mesh.h"
 #include "light.h"
 
 #include <vector>
@@ -9,6 +10,8 @@ class World
 {
 public:
     void add(Object* o);
+
+    void add(Mesh* m);
 
     void add(Light* l);
 

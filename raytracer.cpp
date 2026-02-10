@@ -48,7 +48,7 @@ int main()
     w.add(&s1);
     w.add(&s2);
 
-    Mesh m(&planeMat, plane, glm::scale(glm::mat4(1.0f), glm::vec3(4.0f)));
+    Mesh m(&planeMat, glm::scale(glm::mat4(1.0f), glm::vec3(4.0f)), plane);
     w.add(&m);
 
     // Render scene
@@ -60,7 +60,7 @@ int main()
         glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540, false);
+    c.render(w, "test_render.png", 960, 540, true);
 
     return 0;
 }
