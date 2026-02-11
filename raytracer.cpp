@@ -75,7 +75,7 @@ int main()
         glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540, true, 16);
+    c.render(w, "test_render.png", 960 / 4, 540 / 4, false, 20);
     auto endTime = chrono::system_clock::now();
     chrono::duration<float> renderTime = endTime - startTime;
     cout << "Finished rendering in " << renderTime.count() << " seconds" << endl;

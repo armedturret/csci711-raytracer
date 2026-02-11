@@ -16,7 +16,6 @@ public:
         float filmHeight,
         float focalLen = 1.0f);
 
-    // Note: threadCount should be a perfect square
     void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1);
 
     glm::vec3 clearColor;
@@ -28,7 +27,8 @@ public:
 
 private:
     // Function that renders one part of the entire image
-    void RenderRegion(glm::ivec4 region,
+    void RenderRegion(size_t startRow,
+        size_t endRow,
         uint8_t* image,
         size_t imageWidth,
         bool superSample,

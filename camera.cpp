@@ -37,13 +37,14 @@ void Camera::render(const World& world,
     auto inverseViewTransform = glm::transpose(glm::inverse(viewTransform));
 
     auto image = vector<uint8_t>(width * height * 3);
-    float pixelSize = filmHeight / (float)height;
-    float filmWidth = filmHeight * (float)width / (float)height;
+    float pixelSize = filmHeight / static_cast<float>(height);
+    float filmWidth = filmHeight * static_cast<float>(width) / static_cast<float>(height);
 
     if (threadCount == 1)
     {
         // Just render the full thing synchronously (useful for debugging)
-        RenderRegion(glm::ivec4(0, 0, width, height),
+        RenderRegion(0,
+            height,
             image.data(),
             width,
             superSample,
@@ -56,36 +57,27 @@ void Camera::render(const World& world,
     {
         vector<thread> renderThreads;
 
-        int rootThreads = sqrt(threadCount);
-        glm::ivec2 sizePerThread = glm::ivec2(glm::ceil((float)width / (float)rootThreads), glm::ceil((float)height / (float)rootThreads));
+        int sizePerThread = static_cast<int>(glm::ceil(static_cast<float>(height) / static_cast<float>(threadCount)));
 
-        for (int x = 0; x < width; x += sizePerThread.x)
+        for (int y = 0; y < height; y += sizePerThread)
         {
-            for (int y = 0; y < width; y += sizePerThread.y)
+            int endRow = y + sizePerThread;
+            if (endRow > height)
             {
-                glm::ivec2 areaSize = sizePerThread;
-
-                if (sizePerThread.x + x > width)
-                {
-                    areaSize.x = width - x;
-                }
-
-                if (sizePerThread.y + y > height)
-                {
-                    areaSize.y = height - y;
-                }
-
-                renderThreads.emplace_back(mem_fn(&Camera::RenderRegion),
-                    this,
-                    glm::ivec4(x, y, areaSize.x, areaSize.y),
-                    image.data(),
-                    width,
-                    superSample,
-                    inverseViewTransform,
-                    filmWidth,
-                    pixelSize,
-                    world);
+                endRow = height;
             }
+
+            renderThreads.emplace_back(mem_fn(&Camera::RenderRegion),
+                this,
+                y,
+                endRow,
+                image.data(),
+                width,
+                superSample,
+                inverseViewTransform,
+                filmWidth,
+                pixelSize,
+                world);
         }
 
         for (int i = 0; i < renderThreads.size(); i++)
@@ -96,7 +88,8 @@ void Camera::render(const World& world,
     stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
 }
 
-void Camera::RenderRegion(glm::ivec4 region,
+void Camera::RenderRegion(size_t startRow,
+    size_t endRow,
     uint8_t* image,
     size_t imageWidth,
     bool superSample,
@@ -105,9 +98,9 @@ void Camera::RenderRegion(glm::ivec4 region,
     const float& pixelSize,
     const World& world)
 {
-    for (int x = region.x; x < region.z + region.x; x++)
+    for (int y = static_cast<int>(startRow); y < endRow; y++)
     {
-        for (int y = region.y; y < region.w + region.y; y++)
+        for (int x = 0; x < imageWidth; x++)
         {
             glm::vec3 color = glm::vec3(0.0f);
 
@@ -153,8 +146,8 @@ Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
 
     // define direction in view space, then convert to world space
     ray.direction = glm::vec3(
-        -filmWidth / 2.0f + pixelSize / 2.0f + (float)pixel.x * pixelSize + viewOffset.x,
-        filmHeight / 2.0f - pixelSize / 2.0f - (float)pixel.y * pixelSize + viewOffset.y,
+        -filmWidth / 2.0f + pixelSize / 2.0f + static_cast<float>(pixel.x) * pixelSize + viewOffset.x,
+        filmHeight / 2.0f - pixelSize / 2.0f - static_cast<float>(pixel.y) * pixelSize + viewOffset.y,
         focalLen);
     ray.direction = glm::normalize(ray.direction);
     ray.direction = inverseViewT * glm::vec4(ray.direction, 1.0f);
