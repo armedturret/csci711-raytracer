@@ -1,6 +1,9 @@
 #include "camera.h"
 
 #include <iostream>
+#include <thread>
+#include <functional>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -27,7 +30,8 @@ void Camera::render(const World& world,
     std::string filename,
     int width,
     int height,
-    bool superSample)
+    bool superSample,
+    int threadCount)
 {
     auto viewTransform = glm::lookAt(position, lookAt, up);
     auto inverseViewTransform = glm::transpose(glm::inverse(viewTransform));
@@ -36,9 +40,74 @@ void Camera::render(const World& world,
     float pixelSize = filmHeight / (float)height;
     float filmWidth = filmHeight * (float)width / (float)height;
 
-    for (int x = 0; x < width; x++)
+    if (threadCount == 1)
     {
-        for (int y = 0; y < height; y++)
+        // Just render the full thing synchronously (useful for debugging)
+        RenderRegion(glm::ivec4(0, 0, width, height),
+            image.data(),
+            width,
+            superSample,
+            inverseViewTransform,
+            filmWidth,
+            pixelSize,
+            world);
+    }
+    else
+    {
+        vector<thread> renderThreads;
+
+        int rootThreads = sqrt(threadCount);
+        glm::ivec2 sizePerThread = glm::ivec2(glm::ceil((float)width / (float)rootThreads), glm::ceil((float)height / (float)rootThreads));
+
+        for (int x = 0; x < width; x += sizePerThread.x)
+        {
+            for (int y = 0; y < width; y += sizePerThread.y)
+            {
+                glm::ivec2 areaSize = sizePerThread;
+
+                if (sizePerThread.x + x > width)
+                {
+                    areaSize.x = width - x;
+                }
+
+                if (sizePerThread.y + y > height)
+                {
+                    areaSize.y = height - y;
+                }
+
+                renderThreads.emplace_back(mem_fn(&Camera::RenderRegion),
+                    this,
+                    glm::ivec4(x, y, areaSize.x, areaSize.y),
+                    image.data(),
+                    width,
+                    superSample,
+                    inverseViewTransform,
+                    filmWidth,
+                    pixelSize,
+                    world);
+            }
+        }
+
+        for (int i = 0; i < renderThreads.size(); i++)
+        {
+            renderThreads[i].join();
+        }
+    }
+    stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
+}
+
+void Camera::RenderRegion(glm::ivec4 region,
+    uint8_t* image,
+    size_t imageWidth,
+    bool superSample,
+    const glm::mat4& inverseViewT,
+    const float& filmWidth,
+    const float& pixelSize,
+    const World& world)
+{
+    for (int x = region.x; x < region.z + region.x; x++)
+    {
+        for (int y = region.y; y < region.w + region.y; y++)
         {
             glm::vec3 color = glm::vec3(0.0f);
 
@@ -49,7 +118,7 @@ void Camera::render(const World& world,
                 {
                     Ray ray = generateWorldspaceRay(glm::ivec2(x, y),
                         glm::vec2(i % 2 == 0 ? qPix : -qPix, i < 2 ? qPix : -qPix),
-                        inverseViewTransform,
+                        inverseViewT,
                         filmWidth,
                         pixelSize);
                     color += sampleRay(ray, world);
@@ -60,19 +129,17 @@ void Camera::render(const World& world,
             {
                 Ray ray = generateWorldspaceRay(glm::ivec2(x, y),
                     glm::vec2(0.0f),
-                    inverseViewTransform,
+                    inverseViewT,
                     filmWidth,
                     pixelSize);
                 color = sampleRay(ray, world);
             }
 
-            image[(x + y * width) * 3] = (uint8_t)(color.r * 255.0f);
-            image[(x + y * width) * 3 + 1] = (uint8_t)(color.g * 255.0f);
-            image[(x + y * width) * 3 + 2] = (uint8_t)(color.b * 255.0f);
+            image[(x + y * imageWidth) * 3] = (uint8_t)(color.r * 255.0f);
+            image[(x + y * imageWidth) * 3 + 1] = (uint8_t)(color.g * 255.0f);
+            image[(x + y * imageWidth) * 3 + 2] = (uint8_t)(color.b * 255.0f);
         }
     }
-
-    stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
 }
 
 Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
@@ -82,8 +149,6 @@ Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
     const float& pixelSize)
 {
     Ray ray;
-    ray.origin = position;
-
     ray.origin = position;
 
     // define direction in view space, then convert to world space

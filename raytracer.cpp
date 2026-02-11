@@ -58,12 +58,12 @@ int main()
     finkT = glm::translate(finkT, glm::vec3(1.014f, 0.0f, -1.5f));
     finkT = glm::scale(finkT, glm::vec3(0.01f));
     Mesh fink(&finkMat, finkT, "finklestein.fbx");
-    //w.add(&fink);
+    w.add(&fink);
     glm::mat4 rabbitT(1.0f);
     rabbitT = glm::translate(rabbitT, glm::vec3(1.75f, 0.0f, -1.0f));
     rabbitT = glm::scale(rabbitT, glm::vec3(5.0f));
     Mesh rabbit(&finkMat, rabbitT, "bun_zipper.ply");
-    w.add(&rabbit);
+    //w.add(&rabbit);
 
     // Render scene
     cout << "Rendering scene..." << endl;
@@ -75,7 +75,7 @@ int main()
         glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540, false);
+    c.render(w, "test_render.png", 960, 540, true, 16);
     auto endTime = chrono::system_clock::now();
     chrono::duration<float> renderTime = endTime - startTime;
     cout << "Finished rendering in " << renderTime.count() << " seconds" << endl;

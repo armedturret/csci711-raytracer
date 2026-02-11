@@ -16,7 +16,8 @@ public:
         float filmHeight,
         float focalLen = 1.0f);
 
-    void render(const World& world, std::string filename, int width, int height, bool superSample = false);
+    // Note: threadCount should be a perfect square
+    void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1);
 
     glm::vec3 clearColor;
     glm::vec3 position;
@@ -26,6 +27,16 @@ public:
     float focalLen;
 
 private:
+    // Function that renders one part of the entire image
+    void RenderRegion(glm::ivec4 region,
+        uint8_t* image,
+        size_t imageWidth,
+        bool superSample,
+        const glm::mat4& inverseViewT,
+        const float& filmWidth,
+        const float& pixelSize,
+        const World& world);
+
     // Generates a ray through the center of the pixel
     Ray generateWorldspaceRay(const glm::ivec2& pixel,
         const glm::vec2& viewOffset,
