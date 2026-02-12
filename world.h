@@ -5,6 +5,27 @@
 #include "light.h"
 
 #include <vector>
+#include <memory>
+
+enum class Plane
+{
+    x,
+    y,
+    z
+};
+
+struct KdTreeNode
+{
+    // objects only set in leaf node to save memory
+    bool isLeaf;
+    std::vector<Object*> objects;
+
+    // not leaf node stuff
+    Plane partitionPlane;
+    float partitionCoord;
+    std::shared_ptr<KdTreeNode> front;
+    std::shared_ptr<KdTreeNode> rear;
+};
 
 class World
 {
@@ -15,6 +36,8 @@ public:
 
     void add(Light* l);
 
+    void buildKdTree(int maxObjectsPerLeaf, int maxDepth);
+
     /// <summary>
     /// Returns the closest intersecting point in front of minDistance
     /// </summary>
@@ -24,13 +47,20 @@ public:
     /// <param name="minDistance">Minimum distance for a valid "hit"</param>
     /// <param name="maxDistance">Maximum distance for a valid "hit". Set to negative for inf.</param>
     /// <returns></returns>
-    bool raycast(Ray ray, 
+    bool raycast(Ray ray,
         RayIntersection& hit,
         bool terminateOnAnything = false,
-        float minDistance = 0.0f, 
+        float minDistance = 0.0f,
         float maxDistance = -1.0f) const;
 
 private:
+    std::shared_ptr<KdTreeNode> buildKdNode(int maxObjectsPerLeaf,
+        int maxDepth,
+        AABB bounds,
+        const std::vector<Object*>& nodeObjects,
+        int depth);
+
+    std::shared_ptr<KdTreeNode> rootNode;
     std::vector<Object*> objects;
     std::vector<Light*> lights;
 };

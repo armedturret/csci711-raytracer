@@ -4,11 +4,15 @@
 
 #include "material.h"
 #include "ray.h"
+#include "aabb.h"
 
 class Object
 {
 public:
-    Object(Material* material) : material(material) {}
+    Object(Material* material) : material(material),
+        aabbCreated(false),
+        aabb({ glm::vec3(0.0f), glm::vec3(0.0f) }) 
+    {}
 
     /// <summary>
     /// Returns the closest (non-negative) intersection
@@ -18,5 +22,21 @@ public:
     /// <returns></returns>
     virtual bool intersect(Ray ray, RayIntersection& out) const = 0;
 
+    const AABB& getAABB() { 
+        if (!aabbCreated)
+        {
+            aabb = createAABB();
+            aabbCreated = true;
+        }
+        return aabb; 
+    }
+
     Material* material;
+
+protected:
+    virtual AABB createAABB() = 0;
+
+private:
+    bool aabbCreated;
+    AABB aabb;
 };

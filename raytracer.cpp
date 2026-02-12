@@ -1,5 +1,4 @@
 #include <iostream>
-#include <chrono>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -58,27 +57,24 @@ int main()
     finkT = glm::translate(finkT, glm::vec3(1.014f, 0.0f, -1.5f));
     finkT = glm::scale(finkT, glm::vec3(0.01f));
     Mesh fink(&finkMat, finkT, "finklestein.fbx");
-    w.add(&fink);
+    //w.add(&fink);
     glm::mat4 rabbitT(1.0f);
     rabbitT = glm::translate(rabbitT, glm::vec3(1.75f, 0.0f, -1.0f));
     rabbitT = glm::scale(rabbitT, glm::vec3(5.0f));
     Mesh rabbit(&finkMat, rabbitT, "bun_zipper.ply");
-    //w.add(&rabbit);
+    w.add(&rabbit);
+
+    // Build KD Tree before rendering
+    w.buildKdTree(20, 36);
 
     // Render scene
-    cout << "Rendering scene..." << endl;
-
-    auto startTime = chrono::system_clock::now();
     Camera c(glm::vec3(1.061f, 0.654f, 0.375f),
         glm::vec3(1.061f, 0.654f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
         glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960 / 4, 540 / 4, false, 20);
-    auto endTime = chrono::system_clock::now();
-    chrono::duration<float> renderTime = endTime - startTime;
-    cout << "Finished rendering in " << renderTime.count() << " seconds" << endl;
+    c.render(w, "test_render.png", 960 / 4, 540 / 4, false, 1);
 
     cout << "Press a key to continue..." << endl;
     string a;

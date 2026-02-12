@@ -41,3 +41,10 @@ bool Sphere::intersect(Ray ray, RayIntersection& out) const
     out.distance = small_omega;
     return true;
 }
+
+AABB Sphere::createAABB()
+{
+    glm::vec3 min = center - glm::vec3(radius);
+    glm::vec3 max = center + glm::vec3(radius);
+    return { min, max };
+}

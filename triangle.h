@@ -9,6 +9,9 @@ public:
 
     bool intersect(Ray ray, RayIntersection& out) const override;
 
+protected:
+    AABB createAABB() override;
+
 private:
     glm::vec3 p0;
     glm::vec3 p1;

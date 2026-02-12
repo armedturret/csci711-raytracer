@@ -1,6 +1,7 @@
 #include "camera.h"
 
 #include <iostream>
+#include <chrono>
 #include <thread>
 #include <functional>
 
@@ -33,6 +34,9 @@ void Camera::render(const World& world,
     bool superSample,
     int threadCount)
 {
+    cout << "Rendering scene..." << endl;
+    auto startTime = chrono::system_clock::now();
+
     auto viewTransform = glm::lookAt(position, lookAt, up);
     auto inverseViewTransform = glm::transpose(glm::inverse(viewTransform));
 
@@ -86,6 +90,10 @@ void Camera::render(const World& world,
         }
     }
     stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
+
+    auto endTime = chrono::system_clock::now();
+    chrono::duration<float> renderTime = endTime - startTime;
+    cout << "Finished rendering in " << renderTime.count() << " seconds" << endl;
 }
 
 void Camera::RenderRegion(size_t startRow,
