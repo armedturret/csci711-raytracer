@@ -16,7 +16,7 @@ public:
         float filmHeight,
         float focalLen = 1.0f);
 
-    void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1);
+    void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1) const;
 
     glm::vec3 clearColor;
     glm::vec3 position;
@@ -35,15 +35,15 @@ private:
         const glm::mat4& inverseViewT,
         const float& filmWidth,
         const float& pixelSize,
-        const World& world);
+        const World& world) const;
 
     // Generates a ray through the center of the pixel
     Ray generateWorldspaceRay(const glm::ivec2& pixel,
         const glm::vec2& viewOffset,
         const glm::mat4& inverseViewT,
         const float& filmWidth,
-        const float& pixelSize);
+        const float& pixelSize) const;
 
     // Samples a given ray returns a color 1-0
-    glm::vec3 sampleRay(const Ray& ray, const World& world);
+    glm::vec3 sampleRay(const Ray& ray, const World& world) const;
 };

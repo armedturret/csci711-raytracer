@@ -32,7 +32,7 @@ void Camera::render(const World& world,
     int width,
     int height,
     bool superSample,
-    int threadCount)
+    int threadCount) const
 {
     cout << "Rendering scene..." << endl;
     auto startTime = chrono::system_clock::now();
@@ -104,7 +104,7 @@ void Camera::RenderRegion(size_t startRow,
     const glm::mat4& inverseViewT,
     const float& filmWidth,
     const float& pixelSize,
-    const World& world)
+    const World& world) const
 {
     for (int y = static_cast<int>(startRow); y < endRow; y++)
     {
@@ -147,7 +147,7 @@ Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
     const glm::vec2& viewOffset,
     const glm::mat4& inverseViewT,
     const float& filmWidth,
-    const float& pixelSize)
+    const float& pixelSize) const
 {
     Ray ray;
     ray.origin = position;
@@ -165,7 +165,7 @@ Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
     return ray;
 }
 
-glm::vec3 Camera::sampleRay(const Ray& ray, const World& world)
+glm::vec3 Camera::sampleRay(const Ray& ray, const World& world) const
 {
     glm::vec3 color = clearColor;
 
@@ -173,7 +173,7 @@ glm::vec3 Camera::sampleRay(const Ray& ray, const World& world)
     float maxIrradiance = 1.0f;
 
     RayIntersection hit;
-    if (world.raycast(ray, hit, false, focalLen))
+    if (world.raycast(ray, hit, true, focalLen))
     {
         // Very simple tone production for now
         color = hit.irradiance / maxIrradiance;

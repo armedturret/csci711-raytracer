@@ -37,24 +37,24 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
     else
     {
         // find the bounds of the entire scene
-        AABB bounds = objects[0]->getAABB();
+        worldBounds = objects[0]->getAABB();
         for (auto o : objects)
         {
             const AABB& box = o->getAABB();
 
-            bounds.min.x = glm::min(box.min.x, bounds.min.x);
-            bounds.min.y = glm::min(box.min.y, bounds.min.y);
-            bounds.min.z = glm::min(box.min.z, bounds.min.z);
+            worldBounds.min.x = glm::min(box.min.x, worldBounds.min.x);
+            worldBounds.min.y = glm::min(box.min.y, worldBounds.min.y);
+            worldBounds.min.z = glm::min(box.min.z, worldBounds.min.z);
 
-            bounds.max.x = glm::max(box.max.x, bounds.max.x);
-            bounds.max.y = glm::max(box.max.y, bounds.max.y);
-            bounds.max.z = glm::max(box.max.z, bounds.max.z);
+            worldBounds.max.x = glm::max(box.max.x, worldBounds.max.x);
+            worldBounds.max.y = glm::max(box.max.y, worldBounds.max.y);
+            worldBounds.max.z = glm::max(box.max.z, worldBounds.max.z);
         }
 
         // build the node
         rootNode = buildKdNode(maxObjectsPerLeaf,
             maxDepth,
-            bounds,
+            worldBounds,
             objects,
             1);
     }
@@ -64,7 +64,7 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
     cout << "K-D Tree built in " << buildTime.count() << " seconds!" << endl;
 }
 
-bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, float minDistance, float maxDistance) const
+bool World::raycast(Ray ray, RayIntersection& hit, bool doLighting, float minDistance, float maxDistance) const
 {
     if (!rootNode)
     {
@@ -72,31 +72,31 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, flo
         return false;
     }
 
+    // shortcut instead of actually using min distance :)
+    ray.origin += ray.direction * minDistance;
+
     hit.distance = 0.0f;
     hit.incoming = ray.direction;
-    Object* closestObject = nullptr;
 
-    for (auto o : objects)
+    // check if in world bounds
+    float tmin, tmax;
+    if (!worldBounds.intersects(ray, tmin, tmax))
     {
-        RayIntersection intersection;
-        if (o->intersect(ray, intersection) &&
-            intersection.distance >= minDistance &&
-            (intersection.distance <= maxDistance || maxDistance <= 0.0f))
-        {
-            if (closestObject == nullptr || intersection.distance < hit.distance)
-            {
-                hit.distance = intersection.distance;
-                hit.normal = intersection.normal;
-                hit.position = intersection.position;
-                closestObject = o;
-
-                if (terminateOnAnything)
-                    return true;
-            }
-        }
+        return false;
     }
 
-    if (!terminateOnAnything && closestObject)
+    // we can do max distance by clamping far intersect!!!!
+    if (maxDistance >= 0.0f)
+        tmax = glm::min(maxDistance, tmax);
+    glm::vec3 nearIntersect = ray.origin + ray.direction * tmin;
+    glm::vec3 farIntersect = ray.origin + ray.direction * tmax;
+
+    Object* object = rayTraverse(rootNode, nearIntersect, farIntersect, hit, ray);
+
+    // need to add back in min distance
+    hit.distance += minDistance;
+
+    if (doLighting && object)
     {
         Ray lightRay;
         lightRay.origin = hit.position;
@@ -108,16 +108,16 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool terminateOnAnything, flo
             RayIntersection intersection;
             // Cast a ray from intersection point to a light and see if anything in between
             // Min distance is non-zero to prevent self intersection
-            if (!raycast(lightRay, intersection, true, 0.00001f, glm::distance(l->position, lightRay.origin)))
+            if (!raycast(lightRay, intersection, false, 0.00001f, glm::distance(l->position, lightRay.origin)))
             {
                 hit.visibleLights.push_back(l);
             }
         }
 
-        closestObject->material->illuminate(&hit);
+        object->material->illuminate(&hit);
     }
 
-    return closestObject != nullptr;
+    return object != nullptr;
 }
 
 std::shared_ptr<KdTreeNode> World::buildKdNode(int maxObjectsPerLeaf,
@@ -147,27 +147,10 @@ std::shared_ptr<KdTreeNode> World::buildKdNode(int maxObjectsPerLeaf,
     AABB rearBounds = bounds;
 
     // naive partitioning
-    switch (depth % 3)
-    {
-    case 0:
-        node->partitionPlane = Plane::x;
-        node->partitionCoord = (bounds.max.x + bounds.min.x) / 2.0f;
-        frontBounds.min.x = node->partitionCoord;
-        rearBounds.max.x = node->partitionCoord;
-        break;
-    case 1:
-        node->partitionPlane = Plane::y;
-        node->partitionCoord = (bounds.max.y + bounds.min.y) / 2.0f;
-        frontBounds.min.y = node->partitionCoord;
-        rearBounds.max.y = node->partitionCoord;
-        break;
-    case 2:
-        node->partitionPlane = Plane::z;
-        node->partitionCoord = (bounds.max.z + bounds.min.z) / 2.0f;
-        frontBounds.min.z = node->partitionCoord;
-        rearBounds.max.z = node->partitionCoord;
-        break;
-    }
+    node->pAxis = depth % 3;
+    node->pCoord = (bounds.max[node->pAxis] + bounds.min[node->pAxis]) / 2.0f;
+    frontBounds.min[node->pAxis] = node->pCoord;
+    rearBounds.max[node->pAxis] = node->pCoord;
 
     vector<Object*> frontObjects;
     vector<Object*> rearObjects;
@@ -176,31 +159,46 @@ std::shared_ptr<KdTreeNode> World::buildKdNode(int maxObjectsPerLeaf,
     {
         // Objects can be in both front and rear!
         const AABB& objectBox = o->getAABB();
-        switch (node->partitionPlane)
-        {
-        case Plane::x:
-            if (objectBox.max.x > node->partitionCoord)
-                frontObjects.push_back(o);
-            if (objectBox.min.x < node->partitionCoord)
-                rearObjects.push_back(o);
-            break;
-        case Plane::y:
-            if (objectBox.max.y > node->partitionCoord)
-                frontObjects.push_back(o);
-            if (objectBox.min.y < node->partitionCoord)
-                rearObjects.push_back(o);
-            break;
-        case Plane::z:
-            if (objectBox.max.z > node->partitionCoord)
-                frontObjects.push_back(o);
-            if (objectBox.min.z < node->partitionCoord)
-                rearObjects.push_back(o);
-            break;
-        }
+        if (objectBox.max[node->pAxis] > node->pCoord)
+            frontObjects.push_back(o);
+        if (objectBox.min[node->pAxis] < node->pCoord)
+            rearObjects.push_back(o);
     }
 
     node->front = buildKdNode(maxObjectsPerLeaf, maxDepth, frontBounds, frontObjects, depth + 1);
     node->rear = buildKdNode(maxObjectsPerLeaf, maxDepth, rearBounds, rearObjects, depth + 1);
 
     return node;
+}
+
+Object* World::rayTraverse(std::shared_ptr<KdTreeNode> node,
+    const glm::vec3& nearInt,
+    const glm::vec3& farInt,
+    RayIntersection& hit,
+    const Ray& ray) const
+{
+    if (node->isLeaf)
+    {
+        Object* closestObject = nullptr;
+
+        for (auto o : objects)
+        {
+            // don't need to check max distance since parent will throw out intersections on other side of plane
+            RayIntersection intersection;
+            if (o->intersect(ray, intersection))
+            {
+                if (closestObject == nullptr || intersection.distance < hit.distance)
+                {
+                    hit.distance = intersection.distance;
+                    hit.normal = intersection.normal;
+                    hit.position = intersection.position;
+                    closestObject = o;
+                }
+            }
+        }
+
+        return closestObject;
+    }
+
+    return nullptr;
 }
