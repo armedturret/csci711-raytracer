@@ -54,11 +54,14 @@ private:
         const std::vector<Object*>& nodeObjects,
         int depth);
 
-    Object* rayTraverse(std::shared_ptr<KdTreeNode> node,
+    Object* rayTraverse(const std::shared_ptr<KdTreeNode>& node,
         const glm::vec3& nearInt,
         const glm::vec3& farInt,
         RayIntersection& hit,
         const Ray& ray) const;
+
+    // is t between a and b?
+    bool inRange(const float& t, const float& a, const float& b) const;
 
     AABB worldBounds;
     std::shared_ptr<KdTreeNode> rootNode;

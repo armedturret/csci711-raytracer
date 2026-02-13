@@ -51,6 +51,10 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
             worldBounds.max.z = glm::max(box.max.z, worldBounds.max.z);
         }
 
+        // slightly grow the world bounds to prevent floating point shenanigans
+        worldBounds.min -= glm::vec3(0.001f);
+        worldBounds.max += glm::vec3(0.001f);
+
         // build the node
         rootNode = buildKdNode(maxObjectsPerLeaf,
             maxDepth,
@@ -171,7 +175,7 @@ std::shared_ptr<KdTreeNode> World::buildKdNode(int maxObjectsPerLeaf,
     return node;
 }
 
-Object* World::rayTraverse(std::shared_ptr<KdTreeNode> node,
+Object* World::rayTraverse(const std::shared_ptr<KdTreeNode>& node,
     const glm::vec3& nearInt,
     const glm::vec3& farInt,
     RayIntersection& hit,
@@ -183,9 +187,12 @@ Object* World::rayTraverse(std::shared_ptr<KdTreeNode> node,
 
         for (auto o : objects)
         {
-            // don't need to check max distance since parent will throw out intersections on other side of plane
+            // any intersections not between near and far should get thrown out
             RayIntersection intersection;
-            if (o->intersect(ray, intersection))
+            if (o->intersect(ray, intersection) &&
+                inRange(intersection.position.x, nearInt.x, farInt.x) &&
+                inRange(intersection.position.y, nearInt.y, farInt.y) &&
+                inRange(intersection.position.z, nearInt.z, farInt.z))
             {
                 if (closestObject == nullptr || intersection.distance < hit.distance)
                 {
@@ -200,5 +207,44 @@ Object* World::rayTraverse(std::shared_ptr<KdTreeNode> node,
         return closestObject;
     }
 
-    return nullptr;
+    if (nearInt[node->pAxis] <= node->pCoord)
+    {
+        if (farInt[node->pAxis] <= node->pCoord)
+        {
+            // visit left node (aka rear)
+            return rayTraverse(node->rear, nearInt, farInt, hit, ray);
+        }
+        else
+        {
+            // calculate intersection location
+            float t = (node->pCoord - ray.origin[node->pAxis]) / ray.direction[node->pAxis];
+            glm::vec3 middleInt = t * ray.direction + ray.origin;
+            // visit left then right node
+            Object* left = rayTraverse(node->rear, nearInt, middleInt, hit, ray);
+            if (left)
+                return left;
+            return rayTraverse(node->front, middleInt, farInt, hit, ray);
+        }
+    }
+    else if (farInt[node->pAxis] > node->pCoord)
+    {
+        // visit right node
+        return rayTraverse(node->front, nearInt, farInt, hit, ray);
+    }
+    else
+    {
+        // calculate intersection location
+        float t = (node->pCoord - ray.origin[node->pAxis]) / ray.direction[node->pAxis];
+        glm::vec3 middleInt = t * ray.direction + ray.origin;
+        // visit right then left node
+        Object* right = rayTraverse(node->front, nearInt, middleInt, hit, ray);
+        if (right)
+            return right;
+        return rayTraverse(node->rear, middleInt, farInt, hit, ray);
+    }
+}
+
+bool World::inRange(const float& t, const float& a, const float& b) const
+{
+    return t >= glm::min(a, b) && t <= glm::max(a, b);
 }

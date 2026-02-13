@@ -21,7 +21,7 @@ struct AABB
             float tx2 = (max.x - ray.origin.x) / ray.direction.x;
 
             tmin = glm::max(tmin, glm::min(tx1, tx2));
-            tmax = glm::min(tmin, glm::max(tx1, tx2));
+            tmax = glm::min(tmax, glm::max(tx1, tx2));
         }
 
         if (ray.direction.y != 0.0f)
@@ -30,7 +30,7 @@ struct AABB
             float ty2 = (max.y - ray.origin.y) / ray.direction.y;
 
             tmin = glm::max(tmin, glm::min(ty1, ty2));
-            tmax = glm::min(tmin, glm::max(ty1, ty2));
+            tmax = glm::min(tmax, glm::max(ty1, ty2));
         }
 
         if (ray.direction.z != 0.0f)
@@ -39,7 +39,7 @@ struct AABB
             float tz2 = (max.z - ray.origin.z) / ray.direction.z;
 
             tmin = glm::max(tmin, glm::min(tz1, tz2));
-            tmax = glm::min(tmin, glm::max(tz1, tz2));
+            tmax = glm::min(tmax, glm::max(tz1, tz2));
         }
 
         return tmax >= tmin;
