@@ -66,8 +66,8 @@ void Mesh::init(const glm::mat4& modelT, const vector<glm::vec3>& points)
     if (points.size() == 0)
         return;
 
-    glm::vec3 maxCoords = points[0];
-    glm::vec3 minCoords = points[0];
+    glm::vec3 maxCoords = modelT * glm::vec4(points[0], 1.0f);
+    glm::vec3 minCoords = modelT * glm::vec4(points[0], 1.0f);
     for (int i = 0; i < points.size() / 3; i++)
     {
         // pre-bake transform so it's faster
