@@ -124,11 +124,11 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool doLighting, float minDis
     return object != nullptr;
 }
 
-std::shared_ptr<KdTreeNode> World::buildKdNode(int maxObjectsPerLeaf,
-    int maxDepth,
-    AABB bounds,
+std::shared_ptr<KdTreeNode> World::buildKdNode(const int& maxObjectsPerLeaf,
+    const int& maxDepth,
+    const AABB& bounds,
     const std::vector<Object*>& nodeObjects,
-    int depth)
+    const int& depth)
 {
     if (nodeObjects.size() <= maxObjectsPerLeaf || depth >= maxDepth)
     {
@@ -185,14 +185,12 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode>& node,
     {
         Object* closestObject = nullptr;
 
-        for (auto o : objects)
+        for (auto o : node->objects)
         {
             // any intersections not between near and far should get thrown out
             RayIntersection intersection;
             if (o->intersect(ray, intersection) &&
-                inRange(intersection.position.x, nearInt.x, farInt.x) &&
-                inRange(intersection.position.y, nearInt.y, farInt.y) &&
-                inRange(intersection.position.z, nearInt.z, farInt.z))
+                inRange(intersection.position[node->pAxis], nearInt[node->pAxis], farInt[node->pAxis]))
             {
                 if (closestObject == nullptr || intersection.distance < hit.distance)
                 {
@@ -228,7 +226,7 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode>& node,
     }
     else if (farInt[node->pAxis] > node->pCoord)
     {
-        // visit right node
+        // visit right node (aka front)
         return rayTraverse(node->front, nearInt, farInt, hit, ray);
     }
     else

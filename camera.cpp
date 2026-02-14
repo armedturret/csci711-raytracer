@@ -96,10 +96,10 @@ void Camera::render(const World& world,
     cout << "Finished rendering in " << renderTime.count() << " seconds" << endl;
 }
 
-void Camera::RenderRegion(size_t startRow,
-    size_t endRow,
+void Camera::RenderRegion(int startRow,
+    int endRow,
     uint8_t* image,
-    size_t imageWidth,
+    int imageWidth,
     bool superSample,
     const glm::mat4& inverseViewT,
     const float& filmWidth,

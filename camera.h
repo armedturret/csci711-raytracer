@@ -27,10 +27,10 @@ public:
 
 private:
     // Function that renders one part of the entire image
-    void RenderRegion(size_t startRow,
-        size_t endRow,
+    void RenderRegion(int startRow,
+        int endRow,
         uint8_t* image,
-        size_t imageWidth,
+        int imageWidth,
         bool superSample,
         const glm::mat4& inverseViewT,
         const float& filmWidth,
