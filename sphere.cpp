@@ -1,5 +1,7 @@
 #include "sphere.h"
 
+#include <glm/gtc/constants.hpp>
+
 using namespace std;
 
 Sphere::Sphere(Material* m, glm::vec3 center, float radius) :
@@ -36,11 +38,16 @@ bool Sphere::intersect(Ray ray, RayIntersection& out) const
     if (small_omega <= 0.0f || (omega[1] > 0.0f && omega[1] < small_omega))
         small_omega = omega[1];
 
-    // Placeholder for UV calculations, fill in later if needed
-    out.uv = glm::vec2(0.0f);
     out.position = ray.origin + ray.direction * small_omega;
     out.normal = glm::normalize(out.position - center);
     out.distance = small_omega;
+
+    float pi = glm::pi<float>();
+    float phi = glm::acos((out.position.y - center.y) / radius);
+    float theta = glm::atan((out.position.x - center.x) /
+         (out.position.z - center.z)) + pi;
+    out.uv = glm::vec2(theta / (2 * pi), pi - phi / pi);
+
     return true;
 }
 

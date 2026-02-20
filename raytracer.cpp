@@ -9,6 +9,7 @@
 #include "mesh.h"
 #include "phong_color_mat.h"
 #include "checker_mat.h"
+#include "texture_mat.h"
 #include "light.h"
 
 using namespace std;
@@ -30,7 +31,7 @@ int main()
     glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
     CheckerMaterial planeMat(yellow, red, 1.0f / 16.0f, white, 0.5f, 0.5f, 1.0f);
-    PhongColorMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 5.0f);
+    PhongColorMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f);
 
     // Objects
     vector<Vertex> plane = {
