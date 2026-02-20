@@ -2,12 +2,10 @@
 
 #include "ray.h"
 
-PhongMaterial::PhongMaterial(glm::vec3 color,
-    glm::vec3 specular,
+PhongMaterial::PhongMaterial(glm::vec3 specular,
     float kd,
     float ks,
     float ke) :
-    color(color),
     colorSpecular(specular),
     kd(kd),
     ks(ks),
@@ -23,7 +21,7 @@ void PhongMaterial::illuminate(RayIntersection* hit)
     {
         // Diffuse
         glm::vec3 lightDir = glm::normalize(l->position - hit->position);
-        glm::vec3 diff = l->color * color * glm::max(glm::dot(lightDir, hit->normal), 0.0f);
+        glm::vec3 diff = l->color * getDiffuseColor(hit) * glm::max(glm::dot(lightDir, hit->normal), 0.0f);
         hit->irradiance += kd * diff;
 
         // Specular

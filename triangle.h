@@ -1,11 +1,12 @@
 #pragma once
 
 #include "object.h"
+#include "vertex.h"
 
 class Triangle : public Object
 {
 public:
-    Triangle(Material* m, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2);
+    Triangle(Material* m, const Vertex& p0, const Vertex& p1, const Vertex& p2);
 
     bool intersect(Ray ray, RayIntersection& out) const override;
 
@@ -13,7 +14,7 @@ protected:
     AABB createAABB() override;
 
 private:
-    glm::vec3 p0;
-    glm::vec3 p1;
-    glm::vec3 p2;
+    Vertex p0;
+    Vertex p1;
+    Vertex p2;
 };

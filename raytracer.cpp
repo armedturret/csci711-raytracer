@@ -7,7 +7,7 @@
 #include "sphere.h"
 #include "camera.h"
 #include "mesh.h"
-#include "phong_mat.h"
+#include "phong_color_mat.h"
 #include "light.h"
 
 using namespace std;
@@ -28,17 +28,17 @@ int main()
     glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
     glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
-    PhongMaterial planeMat(yellow, white, 0.5f, 0.5f, 1.0f);
-    PhongMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 5.0f);
+    PhongColorMaterial planeMat(yellow, white, 0.5f, 0.5f, 1.0f);
+    PhongColorMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 5.0f);
 
     // Objects
-    vector<glm::vec3> plane = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(1.0f, 0.0f, -1.0f),
-        glm::vec3(0.0f, 0.0f, -1.0f),
-        glm::vec3(1.0f, 0.0f, -1.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f) };
+    vector<Vertex> plane = {
+        {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(1.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)},
+        {glm::vec3(1.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)}};
 
     Sphere s1(&sphereMat,
         glm::vec3(1.014f, 0.805f, -0.829f),
@@ -62,7 +62,7 @@ int main()
         glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540, true, 1);
+    c.render(w, "test_render.png", 960, 540, false, 1);
 
     cout << "Press a key to continue..." << endl;
     string a;

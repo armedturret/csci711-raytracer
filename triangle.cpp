@@ -1,6 +1,8 @@
 #include "triangle.h"
 
-Triangle::Triangle(Material* m, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2):
+using namespace std;
+
+Triangle::Triangle(Material* m, const Vertex& p0, const Vertex& p1, const Vertex& p2):
     Object(m),
     p0(p0),
     p1(p1),
@@ -9,9 +11,9 @@ Triangle::Triangle(Material* m, glm::vec3 p0, glm::vec3 p1, glm::vec3 p2):
 
 bool Triangle::intersect(Ray ray, RayIntersection& out) const
 {
-    auto e1 = p1 - p0;
-    auto e2 = p2 - p0;
-    auto T = ray.origin - p0;
+    auto e1 = p1.pos - p0.pos;
+    auto e2 = p2.pos - p0.pos;
+    auto T = ray.origin - p0.pos;
     auto P = glm::cross(ray.direction, e2);
     auto Q = glm::cross(T, e1);
 
@@ -25,13 +27,18 @@ bool Triangle::intersect(Ray ray, RayIntersection& out) const
     auto omega = scalar * glm::dot(Q, e2);
     auto u = scalar * glm::dot(P, T);
     auto v = scalar * glm::dot(Q, ray.direction);
+    auto w = u + v;
 
-    if (omega < 0.0f || u < 0.0f || v < 0.0f || u + v > 1.0f)
+    if (omega < 0.0f || u < 0.0f || v < 0.0f || w > 1.0f)
     {
         // outside triangle or behind origin
         return false;
     }
 
+    out.uv = glm::vec2(
+        u * p0.uv.x + v * p1.uv.x + w * p2.uv.x,
+        u * p0.uv.y + v * p1.uv.y + w * p2.uv.y
+    );
     out.distance = omega;
     out.position = ray.origin + omega * ray.direction;
     out.normal = glm::normalize(glm::cross(e1, e2));
@@ -43,13 +50,13 @@ AABB Triangle::createAABB()
     glm::vec3 min = glm::vec3(0.0f);
     glm::vec3 max = glm::vec3(0.0f);
 
-    min.x = glm::min(glm::min(p0.x, p1.x), p2.x);
-    min.y = glm::min(glm::min(p0.y, p1.y), p2.y);
-    min.z = glm::min(glm::min(p0.z, p1.z), p2.z);
+    min.x = glm::min(glm::min(p0.pos.x, p1.pos.x), p2.pos.x);
+    min.y = glm::min(glm::min(p0.pos.y, p1.pos.y), p2.pos.y);
+    min.z = glm::min(glm::min(p0.pos.z, p1.pos.z), p2.pos.z);
 
-    max.x = glm::max(glm::max(p0.x, p1.x), p2.x);
-    max.y = glm::max(glm::max(p0.y, p1.y), p2.y);
-    max.z = glm::max(glm::max(p0.z, p1.z), p2.z);
+    max.x = glm::max(glm::max(p0.pos.x, p1.pos.x), p2.pos.x);
+    max.y = glm::max(glm::max(p0.pos.y, p1.pos.y), p2.pos.y);
+    max.z = glm::max(glm::max(p0.pos.z, p1.pos.z), p2.pos.z);
 
     return { min, max };
 }

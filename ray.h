@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <vector>
+#include <memory>
 
 struct Ray
 {
@@ -16,6 +17,8 @@ struct RayIntersection
 {
     glm::vec3 position;
     glm::vec3 normal;
+    glm::vec2 uv;
+
     // Incoming ray direction (points TO intersection)
     glm::vec3 incoming;
     float distance;

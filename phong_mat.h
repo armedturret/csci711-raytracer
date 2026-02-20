@@ -5,12 +5,13 @@
 class PhongMaterial : public Material
 {
 public:
-    PhongMaterial(glm::vec3 color, glm::vec3 specular, float kd, float ks, float ke);
+    PhongMaterial(glm::vec3 specular, float kd, float ks, float ke);
 
     void illuminate(RayIntersection* hit) override;
 
-    // Both colors are from 0-1 in each channel
-    glm::vec3 color;
+    virtual glm::vec3 getDiffuseColor(RayIntersection* hit) = 0;
+
+    // Colors are from 0-1 in each channel
     glm::vec3 colorSpecular;
 
     // Diffuse and specular constants (no ambient)
