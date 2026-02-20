@@ -197,6 +197,7 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode>& node,
                     hit.distance = intersection.distance;
                     hit.normal = intersection.normal;
                     hit.position = intersection.position;
+                    hit.uv = intersection.uv;
                     closestObject = o;
                 }
             }

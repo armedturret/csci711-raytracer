@@ -27,17 +27,17 @@ bool Triangle::intersect(Ray ray, RayIntersection& out) const
     auto omega = scalar * glm::dot(Q, e2);
     auto u = scalar * glm::dot(P, T);
     auto v = scalar * glm::dot(Q, ray.direction);
-    auto w = u + v;
+    auto w = 1.0f - (u + v);
 
-    if (omega < 0.0f || u < 0.0f || v < 0.0f || w > 1.0f)
+    if (omega < 0.0f || u < 0.0f || v < 0.0f || w < 0.0f)
     {
         // outside triangle or behind origin
         return false;
     }
 
     out.uv = glm::vec2(
-        u * p0.uv.x + v * p1.uv.x + w * p2.uv.x,
-        u * p0.uv.y + v * p1.uv.y + w * p2.uv.y
+        w * p0.uv.x + u * p1.uv.x + v * p2.uv.x,
+        w * p0.uv.y + u * p1.uv.y + v * p2.uv.y
     );
     out.distance = omega;
     out.position = ray.origin + omega * ray.direction;

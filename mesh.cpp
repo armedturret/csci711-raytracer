@@ -76,13 +76,13 @@ void Mesh::init(const glm::mat4& modelT, const vector<Vertex>& points)
     {
         Vertex p0 = points[i * 3], p1 = points[i * 3 + 1], p2 = points[i * 3 + 2];
         // pre-bake transform so it's faster
-        glm::vec4 p0Pos = modelT * glm::vec4(points[i * 3].pos, 1.0f);
+        glm::vec4 p0Pos = modelT * glm::vec4(p0.pos, 1.0f);
         p0Pos /= p0Pos.w;
         p0.pos = p0Pos;
-        glm::vec4 p1Pos = modelT * glm::vec4(points[i * 3 + 1].pos, 1.0f);
+        glm::vec4 p1Pos = modelT * glm::vec4(p1.pos, 1.0f);
         p1Pos /= p1Pos.w;
         p1.pos = p1Pos;
-        glm::vec4 p2Pos = modelT * glm::vec4(points[i * 3 + 2].pos, 1.0f);
+        glm::vec4 p2Pos = modelT * glm::vec4(p2.pos, 1.0f);
         p2Pos /= p2Pos.w;
         p2.pos = p2Pos;
 
