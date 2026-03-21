@@ -34,6 +34,12 @@ public:
 
     void buildKdTree(int maxObjectsPerLeaf, int maxDepth);
 
+    // Returns a ray's irradiance
+    glm::vec3 illuminate(Ray ray,
+        float minDistance = 0.0f,
+        float maxDistance = -1.0f,
+        int depth = 0) const;
+
     /// <summary>
     /// Returns the closest intersecting point in front of minDistance
     /// </summary>
@@ -43,9 +49,8 @@ public:
     /// <param name="minDistance">Minimum distance for a valid "hit"</param>
     /// <param name="maxDistance">Maximum distance for a valid "hit". Set to negative for inf.</param>
     /// <returns></returns>
-    bool raycast(Ray ray,
+    Object* raycast(Ray ray,
         RayIntersection& hit,
-        bool doLighting = false,
         float minDistance = 0.0f,
         float maxDistance = -1.0f) const;
 

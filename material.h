@@ -12,4 +12,10 @@ public:
     /// </summary>
     /// <param name="hit">Existing hit data</param>
     virtual void illuminate(RayIntersection* hit) = 0;
+
+    // reflective component
+    float kr = 0.0f;
+
+    // transmissive component
+    float kt = 0.0f;
 };

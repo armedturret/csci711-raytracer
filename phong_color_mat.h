@@ -5,7 +5,13 @@
 class PhongColorMaterial : public PhongMaterial
 {
 public:
-    PhongColorMaterial(glm::vec3 diffuse, glm::vec3 specular, float kd, float ks, float ke);
+    PhongColorMaterial(glm::vec3 diffuse,
+        glm::vec3 specular,
+        float kd,
+        float ks,
+        float ke,
+        float kr,
+        float kt);
 
     glm::vec3 getDiffuseColor(RayIntersection* hit) override;
 

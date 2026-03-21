@@ -7,7 +7,13 @@
 class TextureMaterial : public PhongMaterial
 {
 public:
-    TextureMaterial(const std::string& imgPath, glm::vec3 specular, float kd, float ks, float ke);
+    TextureMaterial(const std::string& imgPath,
+        glm::vec3 specular,
+        float kd,
+        float ks,
+        float ke,
+        float kr,
+        float kt);
     ~TextureMaterial();
 
     glm::vec3 getDiffuseColor(RayIntersection* hit) override;

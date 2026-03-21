@@ -5,12 +5,16 @@
 PhongMaterial::PhongMaterial(glm::vec3 specular,
     float kd,
     float ks,
-    float ke) :
+    float ke,
+    float kr,
+    float kt) :
     colorSpecular(specular),
     kd(kd),
     ks(ks),
     ke(ke)
 {
+    this->kr = kr;
+    this->kt = kt;
 }
 
 void PhongMaterial::illuminate(RayIntersection* hit)

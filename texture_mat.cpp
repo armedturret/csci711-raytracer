@@ -9,8 +9,14 @@
 
 using namespace std;
 
-TextureMaterial::TextureMaterial(const string& imgPath, glm::vec3 specular, float kd, float ks, float ke):
-    PhongMaterial(specular, kd, ks, ke)
+TextureMaterial::TextureMaterial(const std::string& imgPath,
+    glm::vec3 specular,
+    float kd,
+    float ks,
+    float ke,
+    float kr,
+    float kt) :
+    PhongMaterial(specular, kd, ks, ke, kr, kt)
 {
     stbi_set_flip_vertically_on_load(true);
     data = stbi_load(imgPath.c_str(), &size.x, &size.y, &channels, 3);
@@ -24,7 +30,7 @@ TextureMaterial::TextureMaterial(const string& imgPath, glm::vec3 specular, floa
 
 TextureMaterial::~TextureMaterial()
 {
-    if(data)
+    if (data)
     {
         stbi_image_free(data);
     }

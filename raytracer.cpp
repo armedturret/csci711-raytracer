@@ -31,8 +31,9 @@ int main()
     glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
     glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
-    CheckerMaterial planeMat(yellow, red, 1.0f / 16.0f, white, 0.5f, 0.5f, 1.0f);
-    PhongColorMaterial sphereMat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f);
+    CheckerMaterial planeMat(yellow, red, 1.0f / 16.0f, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 1.0f, 0.0f);
 
     // Objects
     vector<Vertex> plane = {
@@ -41,12 +42,12 @@ int main()
         {glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)},
         {glm::vec3(1.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)},
         {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)}};
+        {glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)} };
 
-    Sphere s1(&sphereMat,
+    Sphere s1(&sphere1Mat,
         glm::vec3(1.014f, 0.805f, -0.829f),
         0.5f);
-    Sphere s2(&sphereMat,
+    Sphere s2(&sphere2Mat,
         glm::vec3(1.801f, 0.537f, -1.423f),
         0.5f);
     w.add(&s1);

@@ -170,12 +170,9 @@ glm::vec3 Camera::sampleRay(const Ray& ray, const World& world) const
     // adhoc conversion method
     float maxIrradiance = 1.0f;
 
-    RayIntersection hit;
-    world.raycast(ray, hit, true, focalLen);
-
     // This is safe since a ray will ALWAYS be populated with color data
     // Very simple tone production for now
-    color = hit.irradiance / maxIrradiance;
+    color = world.illuminate(ray, focalLen) / maxIrradiance;
     color = glm::clamp(color, 0.0f, 1.0f);
     return color;
 }

@@ -5,7 +5,11 @@
 
 using namespace std;
 
-World::World(glm::vec3 bgColor) : bgColor(bgColor)
+const int MAX_ILLUMINATE_DEPTH = 4;
+
+World::World(glm::vec3 bgColor) :
+    bgColor(bgColor),
+    worldBounds()
 {
 }
 
@@ -72,7 +76,53 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
     cout << "K-D Tree built in " << buildTime.count() << " seconds!" << endl;
 }
 
-bool World::raycast(Ray ray, RayIntersection& hit, bool doLighting, float minDistance, float maxDistance) const
+glm::vec3 World::illuminate(Ray ray,
+    float minDistance,
+    float maxDistance,
+    int depth) const
+{
+    RayIntersection hit;
+    Object* o = raycast(ray, hit, minDistance, maxDistance);
+    if (o != nullptr)
+    {
+        Ray lightRay;
+        lightRay.origin = hit.position;
+        // Need to calculate visible lights first
+        for (auto l : lights)
+        {
+            lightRay.direction = glm::normalize(l->position - hit.position);
+
+            RayIntersection intersection;
+            // Cast a ray from intersection point to a light and see if anything in between
+            // Min distance is non-zero to prevent self intersection
+            if (!raycast(lightRay, intersection, 0.00001f, glm::distance(l->position, lightRay.origin)))
+            {
+                hit.visibleLights.push_back(l);
+            }
+        }
+
+        o->material->illuminate(&hit);
+
+        if (depth < MAX_ILLUMINATE_DEPTH)
+        {
+            if (o->material->kr > 0.0f)
+            {
+                Ray reflectedRay;
+                reflectedRay.origin = hit.position;
+                reflectedRay.direction = glm::reflect(ray.direction, hit.normal);
+                hit.irradiance += o->material->kr * illuminate(reflectedRay, 0.00001f, -1.0f, depth + 1);
+            }
+        }
+    }
+    else
+    {
+        hit.irradiance = bgColor;
+    }
+
+    return hit.irradiance;
+}
+
+Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float maxDistance) const
 {
     if (!rootNode)
     {
@@ -90,7 +140,7 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool doLighting, float minDis
     float tmin, tmax;
     if (!worldBounds.intersects(ray, tmin, tmax))
     {
-        return false;
+        return nullptr;
     }
 
     // we can do max distance by clamping far intersect!!!!
@@ -104,32 +154,7 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool doLighting, float minDis
     // need to add back in min distance
     hit.distance += minDistance;
 
-    if (doLighting && object)
-    {
-        Ray lightRay;
-        lightRay.origin = hit.position;
-        // Need to calculate visible lights first
-        for (auto l : lights)
-        {
-            lightRay.direction = glm::normalize(l->position - hit.position);
-
-            RayIntersection intersection;
-            // Cast a ray from intersection point to a light and see if anything in between
-            // Min distance is non-zero to prevent self intersection
-            if (!raycast(lightRay, intersection, false, 0.00001f, glm::distance(l->position, lightRay.origin)))
-            {
-                hit.visibleLights.push_back(l);
-            }
-        }
-
-        object->material->illuminate(&hit);
-    }
-    else if (doLighting)
-    {
-        hit.irradiance = bgColor;
-    }
-
-    return object != nullptr;
+    return object;
 }
 
 std::shared_ptr<KdTreeNode> World::buildKdNode(const int& maxObjectsPerLeaf,
