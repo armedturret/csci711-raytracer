@@ -46,10 +46,10 @@ int main()
 
     Sphere s1(&sphere1Mat,
         glm::vec3(1.014f, 0.805f, -0.829f),
-        0.5f);
+        0.4f);
     Sphere s2(&sphere2Mat,
-        glm::vec3(1.801f, 0.537f, -1.423f),
-        0.5f);
+        glm::vec3(1.801f, 0.537f, -1.723f),
+        0.4f);
     w.add(&s1);
     w.add(&s2);
 
@@ -65,7 +65,7 @@ int main()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540, false, 1);
+    c.render(w, "test_render.png", 960, 540, true, 1);
 
     cout << "Press a key to continue..." << endl;
     string a;

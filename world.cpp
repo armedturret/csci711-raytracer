@@ -109,7 +109,7 @@ glm::vec3 World::illuminate(Ray ray,
             {
                 Ray reflectedRay;
                 reflectedRay.origin = hit.position;
-                reflectedRay.direction = glm::reflect(ray.direction, hit.normal);
+                reflectedRay.direction = glm::normalize(glm::reflect(ray.direction, hit.normal));
                 hit.irradiance += o->material->kr * illuminate(reflectedRay, 0.00001f, -1.0f, depth + 1);
             }
         }
