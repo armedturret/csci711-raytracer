@@ -15,13 +15,11 @@ using namespace std;
 Camera::Camera(glm::vec3 position,
     glm::vec3 lookAt,
     glm::vec3 up,
-    glm::vec3 clearColor,
     float filmHeight,
     float focalLen) :
     position(position),
     lookAt(lookAt),
     up(up),
-    clearColor(clearColor),
     filmHeight(filmHeight),
     focalLen(focalLen)
 {
@@ -167,17 +165,17 @@ Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
 
 glm::vec3 Camera::sampleRay(const Ray& ray, const World& world) const
 {
-    glm::vec3 color = clearColor;
+    glm::vec3 color(0.0f);
 
     // adhoc conversion method
     float maxIrradiance = 1.0f;
 
     RayIntersection hit;
-    if (world.raycast(ray, hit, true, focalLen))
-    {
-        // Very simple tone production for now
-        color = hit.irradiance / maxIrradiance;
-        color = glm::clamp(color, 0.0f, 1.0f);
-    }
+    world.raycast(ray, hit, true, focalLen);
+
+    // This is safe since a ray will ALWAYS be populated with color data
+    // Very simple tone production for now
+    color = hit.irradiance / maxIrradiance;
+    color = glm::clamp(color, 0.0f, 1.0f);
     return color;
 }

@@ -5,6 +5,10 @@
 
 using namespace std;
 
+World::World(glm::vec3 bgColor) : bgColor(bgColor)
+{
+}
+
 void World::add(Object* o)
 {
     objects.push_back(o);
@@ -119,6 +123,10 @@ bool World::raycast(Ray ray, RayIntersection& hit, bool doLighting, float minDis
         }
 
         object->material->illuminate(&hit);
+    }
+    else if (doLighting)
+    {
+        hit.irradiance = bgColor;
     }
 
     return object != nullptr;

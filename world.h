@@ -24,6 +24,8 @@ struct KdTreeNode
 class World
 {
 public:
+    World(glm::vec3 bgColor);
+
     void add(Object* o);
 
     void add(Mesh* m);
@@ -67,4 +69,6 @@ private:
     std::shared_ptr<KdTreeNode> rootNode;
     std::vector<Object*> objects;
     std::vector<Light*> lights;
+
+    glm::vec3 bgColor;
 };

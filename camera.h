@@ -12,13 +12,11 @@ public:
     Camera(glm::vec3 position,
         glm::vec3 lookAt,
         glm::vec3 up,
-        glm::vec3 clearColor,
         float filmHeight,
         float focalLen = 1.0f);
 
     void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1) const;
 
-    glm::vec3 clearColor;
     glm::vec3 position;
     glm::vec3 lookAt;
     glm::vec3 up;

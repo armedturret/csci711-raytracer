@@ -18,7 +18,8 @@ int main()
 {
     cout << "Setting up world..." << endl;
 
-    World w;
+    World w(glm::vec3(0.0f, 0.796f, 0.82f));
+
     // Lights
     Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f) };
     w.add(&pointLight);
@@ -61,7 +62,6 @@ int main()
     Camera c(glm::vec3(1.061f, 0.654f, 0.375f),
         glm::vec3(1.061f, 0.654f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
-        glm::vec3(0.0f, 0.796f, 0.82f),
         0.15f,
         0.1f);
     c.render(w, "test_render.png", 960, 540, false, 1);
