@@ -38,8 +38,8 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
 
     if (objects.size() == 0)
     {
-        rootNode = make_shared<KdTreeNode>();
-        rootNode->objects = objects;
+        rootNode = make_shared<KdTreeNode<Object>>();
+        rootNode->items = objects;
         rootNode->isLeaf = true;
     }
     else
@@ -127,7 +127,7 @@ Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float m
     if (!rootNode)
     {
         cout << "K-D Tree not built yet! Aborting raycast..." << endl;
-        return false;
+        return nullptr;
     }
 
     // shortcut instead of actually using min distance :)
@@ -157,7 +157,7 @@ Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float m
     return object;
 }
 
-std::shared_ptr<KdTreeNode> World::buildKdNode(const int& maxObjectsPerLeaf,
+std::shared_ptr<KdTreeNode<Object>> World::buildKdNode(const int& maxObjectsPerLeaf,
     const int& maxDepth,
     const AABB& bounds,
     const std::vector<Object*>& nodeObjects,
@@ -165,7 +165,7 @@ std::shared_ptr<KdTreeNode> World::buildKdNode(const int& maxObjectsPerLeaf,
 {
     if (nodeObjects.size() <= maxObjectsPerLeaf || depth >= maxDepth)
     {
-        auto leafNode = make_shared<KdTreeNode>();
+        auto leafNode = make_shared<KdTreeNode<Object>>();
         if (nodeObjects.size() >= 2 * maxObjectsPerLeaf)
         {
             cout << "Large leaf warning: Making leaf node with " << nodeObjects.size() << " objects!" << endl;
@@ -173,12 +173,12 @@ std::shared_ptr<KdTreeNode> World::buildKdNode(const int& maxObjectsPerLeaf,
         leafNode->isLeaf = true;
         for (auto o : nodeObjects)
         {
-            leafNode->objects.push_back(o);
+            leafNode->items.push_back(o);
         }
         return leafNode;
     }
 
-    auto node = make_shared<KdTreeNode>();
+    auto node = make_shared<KdTreeNode<Object>>();
 
     AABB frontBounds = bounds;
     AABB rearBounds = bounds;
@@ -208,7 +208,7 @@ std::shared_ptr<KdTreeNode> World::buildKdNode(const int& maxObjectsPerLeaf,
     return node;
 }
 
-Object* World::rayTraverse(const std::shared_ptr<KdTreeNode>& node,
+Object* World::rayTraverse(const std::shared_ptr<KdTreeNode<Object>>& node,
     const glm::vec3& nearInt,
     const glm::vec3& farInt,
     RayIntersection& hit,
@@ -218,7 +218,7 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode>& node,
     {
         Object* closestObject = nullptr;
 
-        for (auto o : node->objects)
+        for (auto o : node->items)
         {
             // any intersections not between near and far should get thrown out
             RayIntersection intersection;

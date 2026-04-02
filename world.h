@@ -3,23 +3,10 @@
 #include "object.h"
 #include "mesh.h"
 #include "light.h"
+#include "kd_tree.h"
 
 #include <vector>
 #include <memory>
-
-struct KdTreeNode
-{
-    // objects only set in leaf node to save memory
-    bool isLeaf;
-    std::vector<Object*> objects;
-
-    // not leaf node stuff
-    // 0 = x, 1 = y, 2 = z (easier to index)
-    int pAxis;
-    float pCoord;
-    std::shared_ptr<KdTreeNode> front;
-    std::shared_ptr<KdTreeNode> rear;
-};
 
 class World
 {
@@ -55,13 +42,13 @@ public:
         float maxDistance = -1.0f) const;
 
 private:
-    std::shared_ptr<KdTreeNode> buildKdNode(const int& maxObjectsPerLeaf,
+    std::shared_ptr<KdTreeNode<Object>> buildKdNode(const int& maxObjectsPerLeaf,
         const int& maxDepth,
         const AABB& bounds,
         const std::vector<Object*>& nodeObjects,
         const int& depth);
 
-    Object* rayTraverse(const std::shared_ptr<KdTreeNode>& node,
+    Object* rayTraverse(const std::shared_ptr<KdTreeNode<Object>>& node,
         const glm::vec3& nearInt,
         const glm::vec3& farInt,
         RayIntersection& hit,
@@ -71,7 +58,7 @@ private:
     bool inRange(const float& t, const float& a, const float& b) const;
 
     AABB worldBounds;
-    std::shared_ptr<KdTreeNode> rootNode;
+    std::shared_ptr<KdTreeNode<Object>> rootNode;
     std::vector<Object*> objects;
     std::vector<Light*> lights;
 
