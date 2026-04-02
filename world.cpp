@@ -7,6 +7,18 @@ using namespace std;
 
 const int MAX_ILLUMINATE_DEPTH = 4;
 
+bool isObjectInFrontOfPCoord(Object* o, float pCoord, int pAxis)
+{
+    const AABB& objectBox = o->getAABB();
+    return objectBox.max[pAxis] > pCoord;
+}
+
+bool isObjectInRearOfPCoord(Object* o, float pCoord, int pAxis)
+{
+    const AABB& objectBox = o->getAABB();
+    return objectBox.min[pAxis] <= pCoord;
+}
+
 World::World(glm::vec3 bgColor) :
     bgColor(bgColor),
     worldBounds()
@@ -39,7 +51,7 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
     if (objects.size() == 0)
     {
         rootNode = make_shared<KdTreeNode<Object>>();
-        rootNode->items = objects;
+        rootNode->objects = objects;
         rootNode->isLeaf = true;
     }
     else
@@ -64,11 +76,13 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
         worldBounds.max += glm::vec3(0.001f);
 
         // build the node
-        rootNode = buildKdNode(maxObjectsPerLeaf,
+        rootNode = buildKdNode<Object>(maxObjectsPerLeaf,
             maxDepth,
             worldBounds,
             objects,
-            1);
+            1,
+            isObjectInFrontOfPCoord,
+            isObjectInRearOfPCoord);
     }
 
     auto endTime = chrono::system_clock::now();
@@ -157,57 +171,6 @@ Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float m
     return object;
 }
 
-std::shared_ptr<KdTreeNode<Object>> World::buildKdNode(const int& maxObjectsPerLeaf,
-    const int& maxDepth,
-    const AABB& bounds,
-    const std::vector<Object*>& nodeObjects,
-    const int& depth)
-{
-    if (nodeObjects.size() <= maxObjectsPerLeaf || depth >= maxDepth)
-    {
-        auto leafNode = make_shared<KdTreeNode<Object>>();
-        if (nodeObjects.size() >= 2 * maxObjectsPerLeaf)
-        {
-            cout << "Large leaf warning: Making leaf node with " << nodeObjects.size() << " objects!" << endl;
-        }
-        leafNode->isLeaf = true;
-        for (auto o : nodeObjects)
-        {
-            leafNode->items.push_back(o);
-        }
-        return leafNode;
-    }
-
-    auto node = make_shared<KdTreeNode<Object>>();
-
-    AABB frontBounds = bounds;
-    AABB rearBounds = bounds;
-
-    // naive partitioning
-    node->pAxis = depth % 3;
-    node->pCoord = (bounds.max[node->pAxis] + bounds.min[node->pAxis]) / 2.0f;
-    frontBounds.min[node->pAxis] = node->pCoord;
-    rearBounds.max[node->pAxis] = node->pCoord;
-
-    vector<Object*> frontObjects;
-    vector<Object*> rearObjects;
-
-    for (auto o : nodeObjects)
-    {
-        // Objects can be in both front and rear!
-        const AABB& objectBox = o->getAABB();
-        if (objectBox.max[node->pAxis] > node->pCoord)
-            frontObjects.push_back(o);
-        if (objectBox.min[node->pAxis] < node->pCoord)
-            rearObjects.push_back(o);
-    }
-
-    node->front = buildKdNode(maxObjectsPerLeaf, maxDepth, frontBounds, frontObjects, depth + 1);
-    node->rear = buildKdNode(maxObjectsPerLeaf, maxDepth, rearBounds, rearObjects, depth + 1);
-
-    return node;
-}
-
 Object* World::rayTraverse(const std::shared_ptr<KdTreeNode<Object>>& node,
     const glm::vec3& nearInt,
     const glm::vec3& farInt,
@@ -218,7 +181,7 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode<Object>>& node,
     {
         Object* closestObject = nullptr;
 
-        for (auto o : node->items)
+        for (auto o : node->objects)
         {
             // any intersections not between near and far should get thrown out
             RayIntersection intersection;

@@ -42,12 +42,6 @@ public:
         float maxDistance = -1.0f) const;
 
 private:
-    std::shared_ptr<KdTreeNode<Object>> buildKdNode(const int& maxObjectsPerLeaf,
-        const int& maxDepth,
-        const AABB& bounds,
-        const std::vector<Object*>& nodeObjects,
-        const int& depth);
-
     Object* rayTraverse(const std::shared_ptr<KdTreeNode<Object>>& node,
         const glm::vec3& nearInt,
         const glm::vec3& farInt,
