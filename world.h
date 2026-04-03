@@ -11,7 +11,7 @@
 class World
 {
 public:
-    World(glm::vec3 bgColor);
+    World(glm::vec3 bgColor, float shadowBias = 0.0001f, float worldBoundsBias = 0.1f);
 
     void add(Object* o);
 
@@ -50,6 +50,9 @@ private:
 
     // is t between a and b?
     bool inRange(const float& t, const float& a, const float& b) const;
+
+    float shadowBias;
+    float worldBoundsBias;
 
     AABB worldBounds;
     std::shared_ptr<KdTreeNode<Object>> rootNode;

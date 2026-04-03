@@ -5,7 +5,12 @@
 class PhongMaterial : public Material
 {
 public:
-    PhongMaterial(glm::vec3 specular, float kd, float ks, float ke, float kr, float kt);
+    PhongMaterial(glm::vec3 specular,
+        float kd,
+        float ks,
+        float ke,
+        float kr,
+        float kt);
 
     void illuminate(RayIntersection* hit) override;
 

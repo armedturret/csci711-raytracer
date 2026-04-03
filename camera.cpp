@@ -32,7 +32,7 @@ void Camera::render(const World& world,
     bool superSample,
     int threadCount) const
 {
-    cout << "Rendering scene..." << endl;
+    cout << "Rendering " << filename << "..." << endl;
     auto startTime = chrono::system_clock::now();
 
     auto viewTransform = glm::lookAt(position, lookAt, up);

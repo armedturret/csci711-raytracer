@@ -14,12 +14,26 @@
 
 using namespace std;
 
-void renderWhitheadScene()
+// Makes a plane from 4 corners passed in clockwise order
+Mesh makePlane(const glm::vec3& c1,
+    const glm::vec3& c2,
+    const glm::vec3 c3,
+    const glm::vec3 c4,
+    Material* material,
+    glm::mat4 modelT = glm::mat4(1.0f))
 {
-
+    vector<Vertex> points = {
+        {glm::vec3(c1.x, c1.y, c1.z), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(c3.x, c3.y, c3.z), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(c2.x, c2.y, c2.z), glm::vec2(0.0f, 1.0f)},
+        {glm::vec3(c3.x, c3.y, c3.z), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(c1.x, c1.y, c1.z), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(c4.x, c4.y, c4.z), glm::vec2(1.0f, 0.0f)} };
+    Mesh plane(material, modelT, points);
+    return plane;
 }
 
-int main()
+void renderWhitheadScene()
 {
     cout << "Setting up world..." << endl;
 
@@ -40,32 +54,31 @@ int main()
     PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 0.0f, 0.0f);
     PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 1.0f, 0.0f);
 
-    // Objects
-    vector<Vertex> plane = {
-        {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f, 1.0f)},
-        {glm::vec3(1.0f, 0.0f, -1.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)} };
-
+    // Basic objects
     Sphere s1(&sphere1Mat,
         glm::vec3(1.014f, 0.805f, -0.829f),
         0.4f);
     Sphere s2(&sphere2Mat,
         glm::vec3(1.801f, 0.537f, -1.723f),
         0.4f);
-    //w.add(&s1);
-    //w.add(&s2);
+    w.add(&s1);
+    w.add(&s2);
 
-    Mesh m(&planeMat, glm::scale(glm::mat4(1.0f), glm::vec3(4.0f)), plane);
-    w.add(&m);
+    Mesh plane = makePlane(
+        glm::vec3(0.0, 0.0, 0.0f),
+        glm::vec3(0.0, 0.0, -1.0f),
+        glm::vec3(1.0, 0.0, -1.0f),
+        glm::vec3(1.0, 0.0, 0.0f),
+        &planeMat,
+        glm::scale(glm::mat4(1.0f), glm::vec3(4.0f)));
+    w.add(&plane);
 
+    // Rabbit addon to whithead scene
     glm::mat4 rabbitT(1.0f);
     rabbitT = glm::translate(rabbitT, glm::vec3(1.75f, 0.0f, -1.0f));
     rabbitT = glm::scale(rabbitT, glm::vec3(5.0f));
     Mesh rabbit(&sphere1Mat, rabbitT, "bun_zipper.ply");
-    w.add(&rabbit);
+    //w.add(&rabbit);
 
     // Build KD Tree before rendering
     w.buildKdTree(20, 36);
@@ -76,7 +89,63 @@ int main()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.15f,
         0.1f);
-    c.render(w, "test_render.png", 960, 540, true, 32);
+    c.render(w, "whithead_scene.png", 960, 540, false, 1);
+}
+
+void renderCornellBox()
+{
+    cout << "Setting up world..." << endl;
+
+    // Need a much larger shadow bias since the world is huge 
+    World w(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
+
+    // Lights
+    // TODO: swap from a point light for an emitting surface
+    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    w.add(&pointLight);
+
+    // Materials
+    glm::vec3 white = glm::vec3(1.0f, 1.0f, 1.0f);
+    PhongColorMaterial whiteMat(white, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+    glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
+    PhongColorMaterial redMat(red, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+    glm::vec3 green = glm::vec3(0.0f, 1.0f, 0.0f);
+    PhongColorMaterial greenMat(green, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+
+    // Walls
+    auto floor = makePlane(
+            glm::vec3(552.8f, 0.0f, 0.0f),
+            glm::vec3(552.8f, 0.0f, 559.2f),
+            glm::vec3(0.0f, 0.0f, 559.2f),
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            &whiteMat
+        );
+    w.add(&floor);
+    
+    auto ceiling = makePlane(
+            glm::vec3(552.8f, 548.8f, 0.0f),
+            glm::vec3(0.0f, 548.8f, 0.0f),
+            glm::vec3(0.0f, 548.8f, 559.2f),
+            glm::vec3(552.8f, 548.8f, 559.2f),
+            &whiteMat
+        );
+    w.add(&ceiling);
+
+    // Build KD Tree before rendering
+    w.buildKdTree(20, 36);
+
+    // Render scene
+    Camera c(glm::vec3(278.0f, 273.0f, -800.0f),
+        glm::vec3(278.0f, 273.0f, -700.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        0.025f,
+        0.035f);
+    c.render(w, "cornell_box.png", 512, 512, false, 1);
+}
+
+int main()
+{
+    renderCornellBox();
 
     cout << "Press a key to continue..." << endl;
     string a;

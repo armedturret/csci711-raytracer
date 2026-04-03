@@ -19,8 +19,12 @@ bool isObjectInRearOfPCoord(Object* o, float pCoord, int pAxis)
     return objectBox.min[pAxis] <= pCoord;
 }
 
-World::World(glm::vec3 bgColor) :
+World::World(glm::vec3 bgColor, 
+    float shadowBias, 
+    float worldBoundsBias) :
     bgColor(bgColor),
+    shadowBias(shadowBias),
+    worldBoundsBias(worldBoundsBias),
     worldBounds()
 {
 }
@@ -72,8 +76,8 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
         }
 
         // slightly grow the world bounds to prevent floating point shenanigans
-        worldBounds.min -= glm::vec3(0.001f);
-        worldBounds.max += glm::vec3(0.001f);
+        worldBounds.min -= glm::vec3(worldBoundsBias);
+        worldBounds.max += glm::vec3(worldBoundsBias);
 
         // build the node
         rootNode = buildKdNode<Object>(maxObjectsPerLeaf,
@@ -109,7 +113,7 @@ glm::vec3 World::illuminate(Ray ray,
             RayIntersection intersection;
             // Cast a ray from intersection point to a light and see if anything in between
             // Min distance is non-zero to prevent self intersection
-            if (!raycast(lightRay, intersection, 0.00001f, glm::distance(l->position, lightRay.origin)))
+            if (!raycast(lightRay, intersection, shadowBias, glm::distance(l->position, lightRay.origin)))
             {
                 hit.visibleLights.push_back(l);
             }
@@ -124,7 +128,7 @@ glm::vec3 World::illuminate(Ray ray,
                 Ray reflectedRay;
                 reflectedRay.origin = hit.position;
                 reflectedRay.direction = glm::normalize(glm::reflect(ray.direction, hit.normal));
-                hit.irradiance += o->material->kr * illuminate(reflectedRay, 0.00001f, -1.0f, depth + 1);
+                hit.irradiance += o->material->kr * illuminate(reflectedRay, shadowBias, -1.0f, depth + 1);
             }
         }
     }
