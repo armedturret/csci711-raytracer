@@ -33,6 +33,8 @@ void PhongMaterial::illuminate(RayIntersection* hit)
         glm::vec3 reflectDir = glm::reflect(-lightDir, hit->normal);
         glm::vec3 view = -hit->incoming;
         glm::vec3 spec = l->color * colorSpecular * glm::pow(glm::max(glm::dot(reflectDir, view), 0.0f), ke);
+        if (glm::dot(lightDir, hit->normal) <= 0.0f)
+            spec = glm::vec3(0.0f);
         hit->irradiance += ks * spec;
     }
 }

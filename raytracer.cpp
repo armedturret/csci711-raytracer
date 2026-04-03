@@ -106,11 +106,11 @@ void renderCornellBox()
 
     // Materials
     glm::vec3 white = glm::vec3(1.0f, 1.0f, 1.0f);
-    PhongColorMaterial whiteMat(white, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+    PhongColorMaterial whiteMat(white, white, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     glm::vec3 red = glm::vec3(1.0f, 0.0f, 0.0f);
-    PhongColorMaterial redMat(red, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+    PhongColorMaterial redMat(red, white, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
     glm::vec3 green = glm::vec3(0.0f, 1.0f, 0.0f);
-    PhongColorMaterial greenMat(green, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+    PhongColorMaterial greenMat(green, white, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
 
     // Walls
     auto floor = makePlane(
@@ -131,11 +131,60 @@ void renderCornellBox()
         );
     w.add(&ceiling);
 
+    // This will eventually emit light
+    auto light_box = makePlane(
+        glm::vec3(343.0f, 548.0f, 227.0f),
+        glm::vec3(213.0f, 548.0f, 227.0f),
+        glm::vec3(213.0f, 548.0f, 332.0f),
+        glm::vec3(343.0f, 548.0f, 332.0f),
+        &whiteMat
+    );
+    w.add(&light_box);
+
+    auto back = makePlane(
+        glm::vec3(0.0f, 0.0f, 559.2f),
+        glm::vec3(552.8f, 0.0f, 559.2f),
+        glm::vec3(552.8f, 548.8f, 559.2f),
+        glm::vec3(0.0f, 548.8f, 559.2f),
+        &whiteMat
+    );
+    w.add(&back);
+
+    auto right = makePlane(
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 0.0f, 559.2f),
+        glm::vec3(0.0f, 548.8f, 559.2f),
+        glm::vec3(0.0f, 548.8f, 0.0f),
+        &redMat
+    );
+    w.add(&right);
+
+    auto left = makePlane(
+        glm::vec3(552.8f, 0.0f, 0.0f),
+        glm::vec3(552.8f, 548.8f, 0.0f),
+        glm::vec3(552.8f, 548.8f, 559.2f),
+        glm::vec3(552.8f, 0.0f, 559.2f),
+        &greenMat
+    );
+    w.add(&left);
+
+    // Objects
+    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 1.0f, 0.0f);
+    Sphere s1(&sphere1Mat,
+        glm::vec3(140.0f, 105.0f, 160.0f),
+        100.0f);
+    Sphere s2(&sphere2Mat,
+        glm::vec3(414.0f, 105.0f, 320.0f),
+        100.0f);
+    w.add(&s1);
+    w.add(&s2);
+
     // Build KD Tree before rendering
     w.buildKdTree(20, 36);
 
     // Render scene
-    Camera c(glm::vec3(278.0f, 273.0f, -800.0f),
+    Camera c(glm::vec3(278.0f, 273.0f, -750.0f),
         glm::vec3(278.0f, 273.0f, -700.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.025f,
