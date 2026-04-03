@@ -14,12 +14,12 @@ public:
 
     void illuminate(RayIntersection* hit) override;
 
-    virtual glm::vec3 getDiffuseColor(RayIntersection* hit) = 0;
+    glm::vec3 getSpecularCoefficients(RayIntersection* hit) override;
 
     // Colors are from 0-1 in each channel
     glm::vec3 colorSpecular;
 
-    // Diffuse and specular constants (no ambient)
+    // diffuse and specular coefficients (phong only)
     float kd;
     float ks;
 

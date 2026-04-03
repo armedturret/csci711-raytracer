@@ -40,7 +40,7 @@ void renderWhitheadScene()
     World w(glm::vec3(0.0f, 0.796f, 0.82f));
 
     // Lights
-    Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
     w.add(&pointLight);
 
     // Materials
@@ -61,8 +61,8 @@ void renderWhitheadScene()
     Sphere s2(&sphere2Mat,
         glm::vec3(1.801f, 0.537f, -1.723f),
         0.4f);
-    w.add(&s1);
-    w.add(&s2);
+    //w.add(&s1);
+    //w.add(&s2);
 
     Mesh plane = makePlane(
         glm::vec3(0.0, 0.0, 0.0f),
@@ -78,7 +78,7 @@ void renderWhitheadScene()
     rabbitT = glm::translate(rabbitT, glm::vec3(1.75f, 0.0f, -1.0f));
     rabbitT = glm::scale(rabbitT, glm::vec3(5.0f));
     Mesh rabbit(&sphere1Mat, rabbitT, "bun_zipper.ply");
-    //w.add(&rabbit);
+    w.add(&rabbit);
 
     // Build KD Tree before rendering
     w.buildKdTree(20, 36);
@@ -96,12 +96,12 @@ void renderCornellBox()
 {
     cout << "Setting up world..." << endl;
 
-    // Need a much larger shadow bias since the world is huge 
+    // Need a much larger shadow bias since the world is huge
     World w(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
 
     // Lights
-    // TODO: swap from a point light for an emitting surface
-    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    // TODO: swap from a point light to a square light
+    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
     w.add(&pointLight);
 
     // Materials
@@ -121,7 +121,7 @@ void renderCornellBox()
             &whiteMat
         );
     w.add(&floor);
-    
+
     auto ceiling = makePlane(
             glm::vec3(552.8f, 548.8f, 0.0f),
             glm::vec3(0.0f, 548.8f, 0.0f),
@@ -169,8 +169,8 @@ void renderCornellBox()
     w.add(&left);
 
     // Objects
-    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 0.0f, 0.0f);
-    PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 1.0f, 0.0f);
+    PhongColorMaterial sphere1Mat(white, white, 0.5f, 0.5f, 15.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere2Mat(white, white, 0.5f, 0.5f, 15.0f, 1.0f, 0.0f);
     Sphere s1(&sphere1Mat,
         glm::vec3(140.0f, 105.0f, 160.0f),
         100.0f);
@@ -182,6 +182,9 @@ void renderCornellBox()
 
     // Build KD Tree before rendering
     w.buildKdTree(20, 36);
+
+    // Generate photon map
+    w.buildPhotonMap(100, 10, 10, 100);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),

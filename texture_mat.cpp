@@ -36,7 +36,7 @@ TextureMaterial::~TextureMaterial()
     }
 }
 
-glm::vec3 TextureMaterial::getDiffuseColor(RayIntersection* hit)
+glm::vec3 TextureMaterial::getDiffuseCoefficients(RayIntersection* hit)
 {
     glm::ivec2 coords;
     coords.x = static_cast<int>(hit->uv.x * size.x) % size.x;

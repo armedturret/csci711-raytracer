@@ -8,4 +8,7 @@ struct Light
 
     // color in RADIANCE
     glm::vec3 color;
+
+    // TODO: remove color above
+    glm::vec3 power;
 };

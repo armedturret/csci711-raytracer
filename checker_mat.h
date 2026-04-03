@@ -15,7 +15,7 @@ public:
         float kr,
         float kt);
 
-    glm::vec3 getDiffuseColor(RayIntersection* hit) override;
+    glm::vec3 getDiffuseCoefficients(RayIntersection* hit) override;
 
     glm::vec3 color1;
     glm::vec3 color2;

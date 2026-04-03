@@ -13,6 +13,10 @@ public:
     /// <param name="hit">Existing hit data</param>
     virtual void illuminate(RayIntersection* hit) = 0;
 
+    // diffuse and specular components by channel (necessary for photon mapping)
+    virtual glm::vec3 getDiffuseCoefficients(RayIntersection* hit) = 0;
+    virtual glm::vec3 getSpecularCoefficients(RayIntersection* hit) = 0;
+
     // reflective component
     float kr = 0.0f;
 

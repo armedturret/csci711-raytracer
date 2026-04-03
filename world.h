@@ -3,6 +3,7 @@
 #include "object.h"
 #include "mesh.h"
 #include "light.h"
+#include "photon.h"
 #include "kd_tree.h"
 
 #include <vector>
@@ -20,6 +21,8 @@ public:
     void add(Light* l);
 
     void buildKdTree(int maxObjectsPerLeaf, int maxDepth);
+
+    void buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTreeDepth, int maxReflections);
 
     // Returns a ray's irradiance
     glm::vec3 illuminate(Ray ray,
@@ -42,7 +45,7 @@ public:
         float maxDistance = -1.0f) const;
 
 private:
-    Object* rayTraverse(const std::shared_ptr<KdTreeNode<Object>>& node,
+    Object* rayTraverse(const std::shared_ptr<KdTreeNode<Object*>>& node,
         const glm::vec3& nearInt,
         const glm::vec3& farInt,
         RayIntersection& hit,
@@ -55,8 +58,10 @@ private:
     float worldBoundsBias;
 
     AABB worldBounds;
-    std::shared_ptr<KdTreeNode<Object>> rootNode;
+    std::shared_ptr<KdTreeNode<Object*>> rootNode;
+    std::shared_ptr<KdTreeNode<shared_ptr<Photon>>> rootPhotonNode;
     std::vector<Object*> objects;
+    std::vector<shared_ptr<Photon>> photons;
     std::vector<Light*> lights;
 
     glm::vec3 bgColor;

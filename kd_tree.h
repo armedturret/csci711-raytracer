@@ -11,7 +11,7 @@ template <typename T> struct KdTreeNode
 {
     // items only set in leaf node to save memory
     bool isLeaf;
-    vector<T*> objects;
+    vector<T> objects;
 
     // not leaf node stuff
     // 0 = x, 1 = y, 2 = z (easier to index)
@@ -27,10 +27,11 @@ template <typename T> struct KdTreeNode
 template <typename T> shared_ptr<KdTreeNode<T>> buildKdNode(const int& maxObjectsPerLeaf,
     const int& maxDepth,
     const AABB& bounds,
-    const vector<T*>& nodeObjects,
+    const vector<T>& nodeObjects,
     const int& depth,
-    const function<bool(T*, float, int)>& inFront,
-    const function<bool(T*, float, int)>& inRear)
+    const function<bool(T, float, int)>& inFront,
+    const function<bool(T, float, int)>& inRear,
+    const function<float(const vector<T>&, const AABB&, int)>& makePartition)
 {
     if (nodeObjects.size() <= maxObjectsPerLeaf || depth >= maxDepth)
     {
@@ -54,12 +55,12 @@ template <typename T> shared_ptr<KdTreeNode<T>> buildKdNode(const int& maxObject
 
     // naive partitioning
     node->pAxis = depth % 3;
-    node->pCoord = (bounds.max[node->pAxis] + bounds.min[node->pAxis]) / 2.0f;
+    node->pCoord = makePartition(nodeObjects, bounds, node->pAxis);
     frontBounds.min[node->pAxis] = node->pCoord;
     rearBounds.max[node->pAxis] = node->pCoord;
 
-    vector<T*> frontObjects;
-    vector<T*> rearObjects;
+    vector<T> frontObjects;
+    vector<T> rearObjects;
 
     for (auto o : nodeObjects)
     {
@@ -70,8 +71,8 @@ template <typename T> shared_ptr<KdTreeNode<T>> buildKdNode(const int& maxObject
             rearObjects.push_back(o);
     }
 
-    node->front = buildKdNode<T>(maxObjectsPerLeaf, maxDepth, frontBounds, frontObjects, depth + 1, inFront, inRear);
-    node->rear = buildKdNode<T>(maxObjectsPerLeaf, maxDepth, rearBounds, rearObjects, depth + 1, inFront, inRear);
+    node->front = buildKdNode<T>(maxObjectsPerLeaf, maxDepth, frontBounds, frontObjects, depth + 1, inFront, inRear, makePartition);
+    node->rear = buildKdNode<T>(maxObjectsPerLeaf, maxDepth, rearBounds, rearObjects, depth + 1, inFront, inRear, makePartition);
 
     return node;
 }
