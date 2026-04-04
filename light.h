@@ -6,9 +6,6 @@ struct Light
 {
     glm::vec3 position;
 
-    // color in RADIANCE
-    glm::vec3 color;
-
-    // TODO: remove color above
+    // power in RADIANCE
     glm::vec3 power;
 };

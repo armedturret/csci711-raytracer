@@ -41,7 +41,7 @@ float choosePhotonPartition(const vector<shared_ptr<Photon>>& photons, const AAB
 {
     // Sort photon positions (only on that axis)
     vector<float> positions;
-    for(auto p : photons)
+    for (auto p : photons)
     {
         positions.push_back(p->pos[pAxis]);
     }
@@ -139,8 +139,8 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
     auto startTime = chrono::system_clock::now();
 
     random_device rd{};
-    mt19937 gen{rd()};
-    normal_distribution guass{0.0f, 1.0f};
+    mt19937 gen{ rd() };
+    normal_distribution<float> guass{ 0.0f, 1.0f };
 
     for (auto l : lights)
     {
@@ -149,7 +149,7 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
         // TODO: more types than point lights (see siggraph course on how square lights emit)
         // Taken from this post: https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
         // TODO: divide photons up by relative brightnesses instead of all photons on every light source
-        for(int i = 0; i < photonsInScene; i++)
+        for (int i = 0; i < photonsInScene; i++)
         {
             glm::vec3 dir(guass(gen), guass(gen), guass(gen));
             while (dir.x == dir.y && dir.z == dir.x && dir.x == 0.0f)
@@ -161,11 +161,11 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
             dir = glm::normalize(dir);
 
             RayIntersection hit;
-            Ray r{l->position, dir};
+            Ray r{ l->position, dir };
             int reflections = 0;
-            while ( reflections < maxReflections ) {
+            while (reflections < maxReflections) {
                 // We hit nothing, the photon is off on an adventure in space
-                if(!raycast(r, hit, shadowBias))
+                if (!raycast(r, hit, shadowBias))
                     break;
 
                 reflections++;
@@ -175,7 +175,7 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
                 // For diffuse -> new direction is (arcos(sqrt(u1)), 2 * pi * u2) where u1 and u2 are random numbers from 0 - 1
 
                 // Store a new photon whenever a diffuse reflection or absorbtion occurs (same photon can be stored multiple times)
-                photons.push_back(make_shared<Photon>(Photon{hit.position, photonPower, hit.incoming}));
+                photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incoming }));
 
                 // For now, pretend 100% absorbtion
                 break;
@@ -186,7 +186,6 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
         }
     }
 
-    // TODO: implement the kd tree part of this
     // Find bounds of photons
     rootPhotonNode = make_shared<KdTreeNode<shared_ptr<Photon>>>();
 
@@ -199,7 +198,7 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
     else
     {
         // find the bounds of the entire scene
-        AABB photonBounds = AABB{photons[0]->pos, photons[0]->pos};
+        AABB photonBounds = AABB{ photons[0]->pos, photons[0]->pos };
         for (auto p : photons)
         {
             photonBounds.min.x = glm::min(p->pos.x, photonBounds.min.x);
@@ -240,23 +239,29 @@ glm::vec3 World::illuminate(Ray ray,
     Object* o = raycast(ray, hit, minDistance, maxDistance);
     if (o != nullptr)
     {
-        Ray lightRay;
-        lightRay.origin = hit.position;
+        glm::vec3 irradiance(0.0f);
+        Ray shadowRay;
+        shadowRay.origin = hit.position;
         // Need to calculate visible lights first
         for (auto l : lights)
         {
-            lightRay.direction = glm::normalize(l->position - hit.position);
+            shadowRay.direction = glm::normalize(l->position - hit.position);
 
             RayIntersection intersection;
             // Cast a ray from intersection point to a light and see if anything in between
             // Min distance is non-zero to prevent self intersection
-            if (!raycast(lightRay, intersection, shadowBias, glm::distance(l->position, lightRay.origin)))
+            if (!raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin)))
             {
-                hit.visibleLights.push_back(l);
+                // TODO: swap this for sampling the photon map
+                irradiance += o->material->illuminate(&hit, glm::normalize(hit.position - l->position), l->power);
             }
         }
 
-        o->material->illuminate(&hit);
+        // outgoing radiance (what we're trying to find = emitted light + reflected
+        // emitted only matters for glowing objects (i.e. the sun or a lightbulb)
+        // reflected is estimated from the photon map and is 1 / pi * r^2 * the
+        // sum of the brdf * sampled photons power
+        // where r is the radius of the photon sample sphere (assumes flat locality)
 
         if (depth < MAX_ILLUMINATE_DEPTH)
         {
@@ -265,16 +270,16 @@ glm::vec3 World::illuminate(Ray ray,
                 Ray reflectedRay;
                 reflectedRay.origin = hit.position;
                 reflectedRay.direction = glm::normalize(glm::reflect(ray.direction, hit.normal));
-                hit.irradiance += o->material->kr * illuminate(reflectedRay, shadowBias, -1.0f, depth + 1);
+                irradiance += o->material->kr * illuminate(reflectedRay, shadowBias, -1.0f, depth + 1);
             }
         }
+
+        return irradiance;
     }
     else
     {
-        hit.irradiance = bgColor;
+        return bgColor;
     }
-
-    return hit.irradiance;
 }
 
 Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float maxDistance) const

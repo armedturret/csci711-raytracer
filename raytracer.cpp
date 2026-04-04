@@ -40,7 +40,7 @@ void renderWhitheadScene()
     World w(glm::vec3(0.0f, 0.796f, 0.82f));
 
     // Lights
-    Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f) };
     w.add(&pointLight);
 
     // Materials
@@ -101,7 +101,7 @@ void renderCornellBox()
 
     // Lights
     // TODO: swap from a point light to a square light
-    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
     w.add(&pointLight);
 
     // Materials
@@ -114,21 +114,21 @@ void renderCornellBox()
 
     // Walls
     auto floor = makePlane(
-            glm::vec3(552.8f, 0.0f, 0.0f),
-            glm::vec3(552.8f, 0.0f, 559.2f),
-            glm::vec3(0.0f, 0.0f, 559.2f),
-            glm::vec3(0.0f, 0.0f, 0.0f),
-            &whiteMat
-        );
+        glm::vec3(552.8f, 0.0f, 0.0f),
+        glm::vec3(552.8f, 0.0f, 559.2f),
+        glm::vec3(0.0f, 0.0f, 559.2f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        &whiteMat
+    );
     w.add(&floor);
 
     auto ceiling = makePlane(
-            glm::vec3(552.8f, 548.8f, 0.0f),
-            glm::vec3(0.0f, 548.8f, 0.0f),
-            glm::vec3(0.0f, 548.8f, 559.2f),
-            glm::vec3(552.8f, 548.8f, 559.2f),
-            &whiteMat
-        );
+        glm::vec3(552.8f, 548.8f, 0.0f),
+        glm::vec3(0.0f, 548.8f, 0.0f),
+        glm::vec3(0.0f, 548.8f, 559.2f),
+        glm::vec3(552.8f, 548.8f, 559.2f),
+        &whiteMat
+    );
     w.add(&ceiling);
 
     // This will eventually emit light

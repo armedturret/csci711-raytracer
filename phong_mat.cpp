@@ -17,26 +17,24 @@ PhongMaterial::PhongMaterial(glm::vec3 specular,
     this->kt = kt;
 }
 
-void PhongMaterial::illuminate(RayIntersection* hit)
+glm::vec3 PhongMaterial::illuminate(RayIntersection* hit, glm::vec3 incidentDir, glm::vec3 power)
 {
-    hit->irradiance = glm::vec3(0.0f);
+    glm::vec3 irradiance = glm::vec3(0.0f);
 
-    for (auto l : hit->visibleLights)
-    {
-        // Diffuse
-        glm::vec3 lightDir = glm::normalize(l->position - hit->position);
-        glm::vec3 diff = l->color * getDiffuseCoefficients(hit) * glm::max(glm::dot(lightDir, hit->normal), 0.0f);
-        hit->irradiance += kd * diff;
+    // Diffuse
+    glm::vec3 diff = getDiffuseCoefficients(hit) * glm::max(glm::dot(-incidentDir, hit->normal), 0.0f);
+    irradiance += kd * diff;
 
-        // Specular
-        // Reflect except ray inbound to point, returns ray outbound
-        glm::vec3 reflectDir = glm::reflect(-lightDir, hit->normal);
-        glm::vec3 view = -hit->incoming;
-        glm::vec3 spec = l->color * getSpecularCoefficients(hit) * glm::pow(glm::max(glm::dot(reflectDir, view), 0.0f), ke);
-        if (glm::dot(lightDir, hit->normal) <= 0.0f)
-            spec = glm::vec3(0.0f);
-        hit->irradiance += ks * spec;
-    }
+    // Specular
+    // Reflect except ray inbound to point, returns ray outbound
+    glm::vec3 reflectDir = glm::reflect(incidentDir, hit->normal);
+    glm::vec3 view = -hit->incoming;
+    glm::vec3 spec = getSpecularCoefficients(hit) * glm::pow(glm::max(glm::dot(reflectDir, view), 0.0f), ke);
+    if (glm::dot(-incidentDir, hit->normal) <= 0.0f)
+        spec = glm::vec3(0.0f);
+    irradiance += ks * spec;
+
+    return irradiance * power;
 }
 
 glm::vec3 PhongMaterial::getSpecularCoefficients(RayIntersection* hit)

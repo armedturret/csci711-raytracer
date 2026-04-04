@@ -27,7 +27,7 @@ private:
     // Function that renders one part of the entire image
     void RenderRegion(int startRow,
         int endRow,
-        uint8_t* image,
+        glm::vec3* irradianceMap,
         int imageWidth,
         bool superSample,
         const glm::mat4& inverseViewT,
@@ -41,7 +41,4 @@ private:
         const glm::mat4& inverseViewT,
         const float& filmWidth,
         const float& pixelSize) const;
-
-    // Samples a given ray returns a color 1-0
-    glm::vec3 sampleRay(const Ray& ray, const World& world) const;
 };

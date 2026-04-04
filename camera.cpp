@@ -39,6 +39,7 @@ void Camera::render(const World& world,
     auto inverseViewTransform = glm::transpose(glm::inverse(viewTransform));
 
     auto image = vector<uint8_t>(width * height * 3);
+    auto irradianceMap = vector<glm::vec3>(width * height);
     float pixelSize = filmHeight / static_cast<float>(height);
     float filmWidth = filmHeight * static_cast<float>(width) / static_cast<float>(height);
 
@@ -47,7 +48,7 @@ void Camera::render(const World& world,
         // Just render the full thing synchronously (useful for debugging)
         RenderRegion(0,
             height,
-            image.data(),
+            irradianceMap.data(),
             width,
             superSample,
             inverseViewTransform,
@@ -73,7 +74,7 @@ void Camera::render(const World& world,
                 this,
                 y,
                 endRow,
-                image.data(),
+                irradianceMap.data(),
                 width,
                 superSample,
                 inverseViewTransform,
@@ -87,6 +88,25 @@ void Camera::render(const World& world,
             renderThreads[i].join();
         }
     }
+
+    float maxIrradiance = 0.0f;
+    // find the maxium irradiance in the entire image (accross all channels)
+    for (auto ir : irradianceMap)
+    {
+        for (int c = 0; c < 3; c++)
+        {
+            maxIrradiance = glm::max(ir[c], maxIrradiance);
+        }
+    }
+
+    // write the irradiances to the image data
+    for (int i = 0; i < irradianceMap.size(); i++)
+    {
+        image[i * 3] = (uint8_t)(irradianceMap[i].r / maxIrradiance * 255.0f);
+        image[i * 3 + 1] = (uint8_t)(irradianceMap[i].g / maxIrradiance * 255.0f);
+        image[i * 3 + 2] = (uint8_t)(irradianceMap[i].b / maxIrradiance * 255.0f);
+    }
+
     stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
 
     auto endTime = chrono::system_clock::now();
@@ -96,7 +116,7 @@ void Camera::render(const World& world,
 
 void Camera::RenderRegion(int startRow,
     int endRow,
-    uint8_t* image,
+    glm::vec3* irradianceMap,
     int imageWidth,
     bool superSample,
     const glm::mat4& inverseViewT,
@@ -108,7 +128,7 @@ void Camera::RenderRegion(int startRow,
     {
         for (int x = 0; x < imageWidth; x++)
         {
-            glm::vec3 color = glm::vec3(0.0f);
+            glm::vec3 irradiance = glm::vec3(0.0f);
 
             if (superSample)
             {
@@ -120,9 +140,9 @@ void Camera::RenderRegion(int startRow,
                         inverseViewT,
                         filmWidth,
                         pixelSize);
-                    color += sampleRay(ray, world);
+                    irradiance += world.illuminate(ray, focalLen);
                 }
-                color /= 4.0f;
+                irradiance /= 4.0f;
             }
             else
             {
@@ -131,12 +151,10 @@ void Camera::RenderRegion(int startRow,
                     inverseViewT,
                     filmWidth,
                     pixelSize);
-                color = sampleRay(ray, world);
+                irradiance = world.illuminate(ray, focalLen);
             }
 
-            image[(x + y * imageWidth) * 3] = (uint8_t)(color.r * 255.0f);
-            image[(x + y * imageWidth) * 3 + 1] = (uint8_t)(color.g * 255.0f);
-            image[(x + y * imageWidth) * 3 + 2] = (uint8_t)(color.b * 255.0f);
+            irradianceMap[(x + y * imageWidth)] = irradiance;
         }
     }
 }
@@ -161,18 +179,4 @@ Ray Camera::generateWorldspaceRay(const glm::ivec2& pixel,
     // opengl standard is a little silly, need to spin the ray around
     ray.direction.z *= -1;
     return ray;
-}
-
-glm::vec3 Camera::sampleRay(const Ray& ray, const World& world) const
-{
-    glm::vec3 color(0.0f);
-
-    // adhoc conversion method
-    float maxIrradiance = 1.0f;
-
-    // This is safe since a ray will ALWAYS be populated with color data
-    // Very simple tone production for now
-    color = world.illuminate(ray, focalLen) / maxIrradiance;
-    color = glm::clamp(color, 0.0f, 1.0f);
-    return color;
 }

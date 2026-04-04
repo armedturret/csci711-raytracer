@@ -12,7 +12,7 @@ public:
         float kr,
         float kt);
 
-    void illuminate(RayIntersection* hit) override;
+    glm::vec3 illuminate(RayIntersection* hit, glm::vec3 incidentDir, glm::vec3 power) override;
 
     glm::vec3 getSpecularCoefficients(RayIntersection* hit) override;
 
