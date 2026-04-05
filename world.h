@@ -60,10 +60,7 @@ private:
         const glm::vec3& farInt,
         RayIntersection& hit,
         const Ray& ray) const;
-
-    // is t between a and b?
-    bool inRange(const float& t, const float& a, const float& b) const;
-
+    
     float shadowBias;
     float worldBoundsBias;
 

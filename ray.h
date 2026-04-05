@@ -20,6 +20,6 @@ struct RayIntersection
     glm::vec2 uv;
 
     // Incoming ray direction (points TO intersection)
-    glm::vec3 incoming;
+    glm::vec3 incidentDir;
     float distance;
 };

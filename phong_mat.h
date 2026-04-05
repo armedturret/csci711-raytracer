@@ -12,9 +12,14 @@ public:
         float kr,
         float kt);
 
-    glm::vec3 illuminate(RayIntersection* hit, glm::vec3 incidentDir, glm::vec3 power) override;
+    glm::vec3 illuminate(const RayIntersection& hit, glm::vec3 lightIncidentDir, glm::vec3 power) override;
 
-    glm::vec3 getSpecularCoefficients(RayIntersection* hit) override;
+    glm::vec3 getDiffuseCoefficients(const RayIntersection& hit) override;
+
+    glm::vec3 getSpecularCoefficients(const RayIntersection& hit) override;
+
+    // Grabs the diffuse color before it's been scaled by kd
+    virtual glm::vec3 getDiffuseColor(const RayIntersection& hit) = 0;
 
     // Colors are from 0-1 in each channel
     glm::vec3 colorSpecular;

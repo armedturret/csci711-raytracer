@@ -18,9 +18,9 @@ CheckerMaterial::CheckerMaterial(glm::vec3 color1,
 {
 }
 
-glm::vec3 CheckerMaterial::getDiffuseCoefficients(RayIntersection* hit)
+glm::vec3 CheckerMaterial::getDiffuseColor(const RayIntersection& hit)
 {
-    if (static_cast<int>(hit->uv.x / checkerSize) % 2 == static_cast<int>(hit->uv.y / checkerSize) % 2)
+    if (static_cast<int>(hit.uv.x / checkerSize) % 2 == static_cast<int>(hit.uv.y / checkerSize) % 2)
         return color1;
     else
         return color2;

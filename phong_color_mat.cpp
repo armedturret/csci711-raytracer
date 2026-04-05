@@ -12,7 +12,7 @@ PhongColorMaterial::PhongColorMaterial(glm::vec3 diffuse,
 {
 }
 
-glm::vec3 PhongColorMaterial::getDiffuseCoefficients(RayIntersection* hit)
+glm::vec3 PhongColorMaterial::getDiffuseColor(const RayIntersection& hit)
 {
     return diffuseColor;
 }

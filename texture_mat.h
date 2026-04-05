@@ -16,7 +16,7 @@ public:
         float kt);
     ~TextureMaterial();
 
-    glm::vec3 getDiffuseCoefficients(RayIntersection* hit) override;
+    glm::vec3 getDiffuseColor(const RayIntersection& hit) override;
 
 private:
     unsigned char* data;

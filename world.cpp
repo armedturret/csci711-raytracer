@@ -11,6 +11,8 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include "util.h"
+
 using namespace std;
 
 const int MAX_ILLUMINATE_DEPTH = 4;
@@ -75,7 +77,8 @@ void World::add(Object* o)
 void World::add(Mesh* m)
 {
     // this is stupid since mesh could fall out of scope, but I don't care
-    for (int i = 0; i < m->getTriangles().size(); i++) {
+    for (int i = 0; i < m->getTriangles().size(); i++) 
+    {
         objects.push_back(m->getTriangles()[i].get());
     }
 }
@@ -146,49 +149,84 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
 
     random_device rd{};
     mt19937 gen{ rd() };
-    normal_distribution<float> guass{ 0.0f, 1.0f };
+    normal_distribution<float> gauss{ 0.0f, 1.0f };
+    uniform_real_distribution<float> refDist(0.0f, 1.0f);
 
     for (auto l : lights)
     {
-        glm::vec3 photonPower = l->power / static_cast<float>(photonsInScene);
+        glm::vec3 startPhotonPower = l->power / static_cast<float>(photonsInScene);
 
         // TODO: more types than point lights (see siggraph course on how square lights emit)
         // Taken from this post: https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
         // TODO: divide photons up by relative brightnesses instead of all photons on every light source
         for (int i = 0; i < photonsInScene; i++)
         {
-            glm::vec3 dir(guass(gen), guass(gen), guass(gen));
-            while (dir.x == dir.y && dir.z == dir.x && dir.x == 0.0f)
-            {
-                dir.x = guass(gen);
-                dir.y = guass(gen);
-                dir.z = guass(gen);
-            }
-            dir = glm::normalize(dir);
+            glm::vec3 dir = Util::randomDirection(gen, gauss);
 
             RayIntersection hit;
             Ray r{ l->position, dir };
             int reflections = 0;
-            while (reflections < maxReflections) {
+            Object* o;
+            glm::vec3 photonPower = startPhotonPower;
+            bool indirect = false;
+            while (reflections < maxReflections) 
+            {
+                o = raycast(r, hit, shadowBias);
                 // We hit nothing, the photon is off on an adventure in space
-                if (!raycast(r, hit, shadowBias))
+                if (o == nullptr)
                     break;
 
                 reflections++;
 
-                // TODO: add reflection (diffuse and specular)
-                // Simple reflection for specular
-                // For diffuse -> new direction is (arcos(sqrt(u1)), 2 * pi * u2) where u1 and u2 are random numbers from 0 - 1
+                // Calculate probabilities (see p16 of 2000 siggraph coure)
+                glm::vec3 diff = o->material->getDiffuseCoefficients(hit);
+                glm::vec3 spec = o->material->getSpecularCoefficients(hit);
+                float diffSum = diff.r + diff.g + diff.b;
+                float specSum = spec.r + spec.g + spec.b;
+                float pr = glm::max(diff.r + spec.r, glm::max(diff.g + spec.g, diff.b + spec.b));
+                float pd = diffSum / (diffSum + specSum) * pr;
+                float ps = specSum / (diffSum + specSum) * pr;
 
-                // Store a new photon whenever a diffuse reflection or absorbtion occurs (same photon can be stored multiple times)
-                photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incoming }));
+                // Determine if this a diffuse, specular, or absorbed reflection
+                float rReflect = refDist(gen);
+                if (rReflect <= pd)
+                {
+                    // Diffuse reflection
+                    photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incidentDir }));
 
-                // For now, pretend 100% absorbtion
-                break;
+                    // Need to adjust power of photon (i.e. only red photons bounce off a red surface)
+                    photonPower = photonPower * diff / pd;
+
+                    r.origin = hit.position;
+                    // Choose a random direction in a sphere until in same hemisphere as normal
+                    glm::vec3 diffDir(0.0f);
+                    do
+                    {
+                        diffDir = Util::randomDirection(gen, gauss);
+                    } 
+                    while (glm::dot(hit.normal, diffDir) <= 0.0f);
+                    r.direction = diffDir;
+                    indirect = true;
+                }
+                else if (rReflect <= pd + ps)
+                {
+                    // Specular reflection
+                    // Photons do NOT get stored on specular reflection
+                    // Need to adjust power of photon (i.e. only red photons bounce off a red surface)
+                    photonPower = photonPower * spec / ps;
+
+                    // Simple reflection is ok here. Technically this is defined by a brdf but idgaf.
+                    r.direction = glm::reflect(hit.incidentDir, hit.normal);
+                    r.origin = hit.position;
+                    indirect = true;
+                }
+                else
+                {
+                    // Absorbed
+                    photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incidentDir }));
+                    break;
+                }
             };
-
-            // TODO: Color/power calculations on p16 of the sigraph course, need to change materials (again)
-            // Fuck my chud life
         }
     }
 
@@ -255,10 +293,10 @@ glm::vec3 World::illuminate(Ray ray,
         glm::vec3 irradiance(0.0f);
 
         // Direct illumination
-        /*Ray shadowRay;
+        Ray shadowRay;
         shadowRay.origin = hit.position;
         // Need to calculate visible lights first
-        for (auto l : lights)
+        /*for (auto l : lights)
         {
             shadowRay.direction = glm::normalize(l->position - hit.position);
 
@@ -268,7 +306,7 @@ glm::vec3 World::illuminate(Ray ray,
             if (!raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin)))
             {
                 // TODO: swap this for sampling the photon map
-                irradiance += o->material->illuminate(&hit, glm::normalize(hit.position - l->position), l->power);
+                irradiance += o->material->illuminate(hit, glm::normalize(hit.position - l->position), l->power);
             }
         }*/
 
@@ -284,7 +322,7 @@ glm::vec3 World::illuminate(Ray ray,
 
         for (auto p : nearestPhotons)
         {
-            irradiance += o->material->illuminate(&hit, p->incidentDirection, p->power);
+            irradiance += o->material->illuminate(hit, p->incidentDirection, p->power);
         }
         irradiance /= (glm::pi<float>() * sampleSqDist);
 
@@ -321,7 +359,7 @@ Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float m
     ray.origin += ray.direction * minDistance;
 
     hit.distance = 0.0f;
-    hit.incoming = ray.direction;
+    hit.incidentDir = ray.direction;
 
     // check if in world bounds
     float tmin, tmax;
@@ -410,7 +448,7 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode<Object*>>& node,
             // any intersections not between near and far should get thrown out
             RayIntersection intersection;
             if (o->intersect(ray, intersection) &&
-                inRange(intersection.position[node->pAxis], nearInt[node->pAxis], farInt[node->pAxis]))
+                Util::inRange(intersection.position[node->pAxis], nearInt[node->pAxis], farInt[node->pAxis]))
             {
                 if (closestObject == nullptr || intersection.distance < hit.distance)
                 {
@@ -461,9 +499,4 @@ Object* World::rayTraverse(const std::shared_ptr<KdTreeNode<Object*>>& node,
             return right;
         return rayTraverse(node->rear, middleInt, farInt, hit, ray);
     }
-}
-
-bool World::inRange(const float& t, const float& a, const float& b) const
-{
-    return t >= glm::min(a, b) && t <= glm::max(a, b);
 }
