@@ -77,7 +77,7 @@ void World::add(Object* o)
 void World::add(Mesh* m)
 {
     // this is stupid since mesh could fall out of scope, but I don't care
-    for (int i = 0; i < m->getTriangles().size(); i++) 
+    for (int i = 0; i < m->getTriangles().size(); i++)
     {
         objects.push_back(m->getTriangles()[i].get());
     }
@@ -169,7 +169,7 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
             Object* o;
             glm::vec3 photonPower = startPhotonPower;
             bool indirect = false;
-            while (reflections < maxReflections) 
+            while (reflections < maxReflections)
             {
                 o = raycast(r, hit, shadowBias);
                 // We hit nothing, the photon is off on an adventure in space
@@ -203,8 +203,7 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
                     do
                     {
                         diffDir = Util::randomDirection(gen, gauss);
-                    } 
-                    while (glm::dot(hit.normal, diffDir) <= 0.0f);
+                    } while (glm::dot(hit.normal, diffDir) <= 0.0f);
                     r.direction = diffDir;
                     indirect = true;
                 }
@@ -310,6 +309,7 @@ glm::vec3 World::illuminate(Ray ray,
             }
         }*/
 
+        // Indirect Illumination
         // outgoing radiance (what we're trying to find = emitted light + reflected
         // emitted only matters for glowing objects (i.e. the sun or a lightbulb)
         // reflected is estimated from the photon map and is (1 / pi * r^2) * the
@@ -328,6 +328,7 @@ glm::vec3 World::illuminate(Ray ray,
 
         // TODO: make photon map/direct illumination hybrid
 
+        // Specular Illumination
         if (depth < MAX_ILLUMINATE_DEPTH)
         {
             if (o->material->kr > 0.0f)

@@ -106,11 +106,11 @@ void renderCornellBox()
 
     // Materials
     glm::vec3 white = glm::vec3(1.0f, 1.0f, 1.0f);
-    PhongColorMaterial whiteMat(white, white, 0.8f, 0.0f, 1.0f, 0.0f, 0.0f);
-    glm::vec3 red = glm::vec3(1.0f, 0.1f, 0.1f);
-    PhongColorMaterial redMat(red, white, 0.8f, 0.0f, 1.0f, 0.0f, 0.0f);
-    glm::vec3 green = glm::vec3(0.1f, 1.0f, 0.1f);
-    PhongColorMaterial greenMat(green, white, 0.8f, 0.0f, 1.0f, 0.0f, 0.0f);
+    PhongColorMaterial whiteMat(white, white, 0.75f, 0.0f, 1.0f, 0.0f, 0.0f);
+    glm::vec3 red = glm::vec3(1.0f, 0.2f, 0.2f);
+    PhongColorMaterial redMat(red, white, 0.65f, 0.0f, 1.0f, 0.0f, 0.0f);
+    glm::vec3 green = glm::vec3(0.2f, 1.0f, 0.2f);
+    PhongColorMaterial greenMat(green, white, 0.45f, 0.0f, 1.0f, 0.0f, 0.0f);
 
     // Walls
     auto floor = makePlane(
@@ -169,7 +169,7 @@ void renderCornellBox()
     w.add(&left);
 
     // Objects
-    PhongColorMaterial sphere1Mat(white, white, 0.8f, 0.2f, 15.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere1Mat(white, white, 1.0f, 0.2f, 15.0f, 0.0f, 0.0f);
     PhongColorMaterial sphere2Mat(white, white, 0.0f, 0.99f, 15.0f, 1.0f, 0.0f);
     Sphere s1(&sphere1Mat,
         glm::vec3(140.0f, 105.0f, 160.0f),
