@@ -87,7 +87,7 @@ void renderWhitheadScene()
     Camera c(glm::vec3(1.061f, 0.654f, 0.375f),
         glm::vec3(1.061f, 0.654f, -1.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
-        0.15f,
+        0.10f,
         0.1f);
     c.render(w, "whithead_scene.png", 960, 540, false, 1);
 }
@@ -184,7 +184,7 @@ void renderCornellBox()
     w.buildKdTree(20, 36);
 
     // Generate photon map
-    w.buildPhotonMap(100000, 50);
+    w.buildPhotonMap(100000, 500);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),
@@ -192,8 +192,8 @@ void renderCornellBox()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.025f,
         0.035f,
-        50.0f,
-        30);
+        30.0f,
+        100);
     c.render(w, "cornell_box.png", 512, 512, false, 1);
 }
 

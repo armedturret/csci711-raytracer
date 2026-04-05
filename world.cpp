@@ -192,7 +192,8 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
                 if (rReflect <= pd)
                 {
                     // Diffuse reflection
-                    photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incidentDir }));
+                    if (indirect)
+                        photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incidentDir }));
 
                     // Need to adjust power of photon (i.e. only red photons bounce off a red surface)
                     photonPower = photonPower * diff / pd;
@@ -222,7 +223,8 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
                 else
                 {
                     // Absorbed
-                    photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incidentDir }));
+                    if (indirect)
+                        photons.push_back(make_shared<Photon>(Photon{ hit.position, photonPower, hit.incidentDir }));
                     break;
                 }
             };
@@ -291,24 +293,6 @@ glm::vec3 World::illuminate(Ray ray,
     {
         glm::vec3 irradiance(0.0f);
 
-        // Direct illumination
-        Ray shadowRay;
-        shadowRay.origin = hit.position;
-        // Need to calculate visible lights first
-        /*for (auto l : lights)
-        {
-            shadowRay.direction = glm::normalize(l->position - hit.position);
-
-            RayIntersection intersection;
-            // Cast a ray from intersection point to a light and see if anything in between
-            // Min distance is non-zero to prevent self intersection
-            if (!raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin)))
-            {
-                // TODO: swap this for sampling the photon map
-                irradiance += o->material->illuminate(hit, glm::normalize(hit.position - l->position), l->power);
-            }
-        }*/
-
         // Indirect Illumination
         // outgoing radiance (what we're trying to find = emitted light + reflected
         // emitted only matters for glowing objects (i.e. the sun or a lightbulb)
@@ -322,11 +306,26 @@ glm::vec3 World::illuminate(Ray ray,
 
         for (auto p : nearestPhotons)
         {
-            irradiance += o->material->illuminate(hit, p->incidentDirection, p->power);
+            irradiance += o->material->illuminateDiffuse(hit, p->incidentDirection, p->power);
         }
         irradiance /= (glm::pi<float>() * sampleSqDist);
 
-        // TODO: make photon map/direct illumination hybrid
+        // Direct illumination
+        Ray shadowRay;
+        shadowRay.origin = hit.position;
+        // Need to calculate visible lights first
+        for (auto l : lights)
+        {
+            shadowRay.direction = glm::normalize(l->position - hit.position);
+
+            RayIntersection intersection;
+            // Cast a ray from intersection point to a light and see if anything in between
+            // Min distance is non-zero to prevent self intersection
+            if (!raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin)))
+            {
+                irradiance += o->material->illuminate(hit, glm::normalize(hit.position - l->position), l->power);
+            }
+        }
 
         // Specular Illumination
         if (depth < MAX_ILLUMINATE_DEPTH)

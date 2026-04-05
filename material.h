@@ -10,6 +10,9 @@ public:
     // Calculates the irradiance from a single light source's power and incident direction (i.e dir from light source to point)
     virtual glm::vec3 illuminate(const RayIntersection& hit, glm::vec3 lightIncidentDir, glm::vec3 power) = 0;
 
+    // Calculates only the diffuse component of illumination
+    virtual glm::vec3 illuminateDiffuse(const RayIntersection& hit, glm::vec3 lightIncidentDir, glm::vec3 power) = 0;
+
     // diffuse and specular components by channel (necessary for emission step of photon mapping)
     // these do not need lighting data
     virtual glm::vec3 getDiffuseCoefficients(const RayIntersection& hit) = 0;

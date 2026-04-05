@@ -14,6 +14,8 @@ public:
 
     glm::vec3 illuminate(const RayIntersection& hit, glm::vec3 lightIncidentDir, glm::vec3 power) override;
 
+    glm::vec3 illuminateDiffuse(const RayIntersection& hit, glm::vec3 lightIncidentDir, glm::vec3 power) override;
+
     glm::vec3 getDiffuseCoefficients(const RayIntersection& hit) override;
 
     glm::vec3 getSpecularCoefficients(const RayIntersection& hit) override;
