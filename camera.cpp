@@ -16,12 +16,16 @@ Camera::Camera(glm::vec3 position,
     glm::vec3 lookAt,
     glm::vec3 up,
     float filmHeight,
-    float focalLen) :
+    float focalLen,
+    float maxPhotonSampleDistance,
+    int maxPhotonSampleCount) :
     position(position),
     lookAt(lookAt),
     up(up),
     filmHeight(filmHeight),
-    focalLen(focalLen)
+    focalLen(focalLen),
+    maxPhotonSampleDistance(maxPhotonSampleDistance),
+    maxPhotonSampleCount(maxPhotonSampleCount)
 {
 }
 
@@ -98,13 +102,15 @@ void Camera::render(const World& world,
             maxIrradiance = glm::max(ir[c], maxIrradiance);
         }
     }
+    // TODO: remove this and replace w/ proper tone mapping (this is so dumb)
+    maxIrradiance = 0.0001f;
 
     // write the irradiances to the image data
     for (int i = 0; i < irradianceMap.size(); i++)
     {
-        image[i * 3] = (uint8_t)(irradianceMap[i].r / maxIrradiance * 255.0f);
-        image[i * 3 + 1] = (uint8_t)(irradianceMap[i].g / maxIrradiance * 255.0f);
-        image[i * 3 + 2] = (uint8_t)(irradianceMap[i].b / maxIrradiance * 255.0f);
+        image[i * 3] = (uint8_t)(glm::clamp(irradianceMap[i].r / maxIrradiance, 0.0f, 1.0f) * 255.0f);
+        image[i * 3 + 1] = (uint8_t)(glm::clamp(irradianceMap[i].g / maxIrradiance, 0.0f, 1.0f) * 255.0f);
+        image[i * 3 + 2] = (uint8_t)(glm::clamp(irradianceMap[i].b / maxIrradiance, 0.0f, 1.0f) * 255.0f);
     }
 
     stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
@@ -140,7 +146,7 @@ void Camera::RenderRegion(int startRow,
                         inverseViewT,
                         filmWidth,
                         pixelSize);
-                    irradiance += world.illuminate(ray, focalLen);
+                    irradiance += world.illuminate(ray, maxPhotonSampleDistance, maxPhotonSampleCount, focalLen);
                 }
                 irradiance /= 4.0f;
             }
@@ -151,7 +157,7 @@ void Camera::RenderRegion(int startRow,
                     inverseViewT,
                     filmWidth,
                     pixelSize);
-                irradiance = world.illuminate(ray, focalLen);
+                irradiance = world.illuminate(ray, maxPhotonSampleDistance, maxPhotonSampleCount, focalLen);
             }
 
             irradianceMap[(x + y * imageWidth)] = irradiance;

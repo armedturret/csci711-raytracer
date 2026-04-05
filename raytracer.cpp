@@ -139,7 +139,7 @@ void renderCornellBox()
         glm::vec3(343.0f, 548.0f, 332.0f),
         &whiteMat
     );
-    w.add(&light_box);
+    //w.add(&light_box);
 
     auto back = makePlane(
         glm::vec3(0.0f, 0.0f, 559.2f),
@@ -184,14 +184,16 @@ void renderCornellBox()
     w.buildKdTree(20, 36);
 
     // Generate photon map
-    w.buildPhotonMap(100, 10, 10, 100);
+    w.buildPhotonMap(100000, 500);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),
         glm::vec3(278.0f, 273.0f, -700.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.025f,
-        0.035f);
+        0.035f,
+        25.0f,
+        30);
     c.render(w, "cornell_box.png", 512, 512, false, 1);
 }
 

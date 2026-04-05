@@ -4,6 +4,12 @@
 #include <chrono>
 #include <random>
 #include <algorithm>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/norm.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/constants.hpp>
 
 using namespace std;
 
@@ -116,7 +122,7 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
             maxDepth,
             worldBounds,
             objects,
-            1,
+            0,
             isObjectInFrontOfPCoord,
             isObjectInRearOfPCoord,
             chooseObjectPartition);
@@ -127,7 +133,7 @@ void World::buildKdTree(int maxObjectsPerLeaf, int maxDepth)
     cout << "K-D Tree built in " << buildTime.count() << " seconds!" << endl;
 }
 
-void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTreeDepth, int maxReflections)
+void World::buildPhotonMap(int photonsInScene, int maxReflections)
 {
     if (!rootNode)
     {
@@ -215,11 +221,11 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
         photonBounds.max += glm::vec3(worldBoundsBias);
 
         // build the node
-        rootPhotonNode = buildKdNode<shared_ptr<Photon>>(maxPhotonsPerLeaf,
-            maxTreeDepth,
-            worldBounds,
+        rootPhotonNode = buildKdNode<shared_ptr<Photon>>(-1,
+            -1,
+            photonBounds,
             photons,
-            1,
+            0,
             isPhotonInFrontOfPCoord,
             isPhotonInRearOfPCoord,
             choosePhotonPartition);
@@ -231,16 +237,25 @@ void World::buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTre
 }
 
 glm::vec3 World::illuminate(Ray ray,
+    float maxPhotonSampleDistance,
+    int maxPhotonSampleCount,
     float minDistance,
-    float maxDistance,
     int depth) const
 {
+    if (!rootPhotonNode)
+    {
+        cout << "Photon map not built! Aborting..." << endl;
+        return glm::vec3(0.0f);
+    }
+
     RayIntersection hit;
-    Object* o = raycast(ray, hit, minDistance, maxDistance);
+    Object* o = raycast(ray, hit, minDistance, -1.0f);
     if (o != nullptr)
     {
         glm::vec3 irradiance(0.0f);
-        Ray shadowRay;
+
+        // Direct illumination
+        /*Ray shadowRay;
         shadowRay.origin = hit.position;
         // Need to calculate visible lights first
         for (auto l : lights)
@@ -255,13 +270,25 @@ glm::vec3 World::illuminate(Ray ray,
                 // TODO: swap this for sampling the photon map
                 irradiance += o->material->illuminate(&hit, glm::normalize(hit.position - l->position), l->power);
             }
-        }
+        }*/
 
         // outgoing radiance (what we're trying to find = emitted light + reflected
         // emitted only matters for glowing objects (i.e. the sun or a lightbulb)
-        // reflected is estimated from the photon map and is 1 / pi * r^2 * the
+        // reflected is estimated from the photon map and is (1 / pi * r^2) * the
         // sum of the brdf * sampled photons power
         // where r is the radius of the photon sample sphere (assumes flat locality)
+
+        vector<shared_ptr<Photon>> nearestPhotons;
+        float sampleSqDist = maxPhotonSampleDistance * maxPhotonSampleDistance;
+        findNearestPhotons(rootPhotonNode, hit.position, sampleSqDist, maxPhotonSampleCount, nearestPhotons);
+
+        for (auto p : nearestPhotons)
+        {
+            irradiance += o->material->illuminate(&hit, p->incidentDirection, p->power);
+        }
+        irradiance /= (glm::pi<float>() * sampleSqDist);
+
+        // TODO: make photon map/direct illumination hybrid
 
         if (depth < MAX_ILLUMINATE_DEPTH)
         {
@@ -270,7 +297,7 @@ glm::vec3 World::illuminate(Ray ray,
                 Ray reflectedRay;
                 reflectedRay.origin = hit.position;
                 reflectedRay.direction = glm::normalize(glm::reflect(ray.direction, hit.normal));
-                irradiance += o->material->kr * illuminate(reflectedRay, shadowBias, -1.0f, depth + 1);
+                irradiance += o->material->kr * illuminate(reflectedRay, maxPhotonSampleDistance, maxPhotonSampleCount, shadowBias, depth + 1);
             }
         }
 
@@ -315,6 +342,57 @@ Object* World::raycast(Ray ray, RayIntersection& hit, float minDistance, float m
     hit.distance += minDistance;
 
     return object;
+}
+
+void World::findNearestPhotons(const shared_ptr<KdTreeNode<shared_ptr<Photon>>>& node,
+    glm::vec3 pos,
+    float& maxSqDistance,
+    int maxCount,
+    vector<shared_ptr<Photon>>& out) const
+{
+    if (node->isLeaf && node->objects.size() == 1)
+    {
+        auto cmp = [pos](const shared_ptr<Photon>& a, const shared_ptr<Photon>& b)
+            {
+                return glm::length2(a->pos - pos) > glm::length2(b->pos - pos);
+            };
+        // object 0 will always be safe here (we only have 1 photon per leaf)
+        auto p = node->objects[0];
+        float sqDist = glm::length2(p->pos - pos);
+        if (sqDist < maxSqDistance)
+        {
+            if (out.size() < maxCount)
+            {
+                // slight optimization, when we have too few photons, don't bother with a heap
+                out.push_back(node->objects[0]);
+                if (out.size() == maxCount)
+                    make_heap(out.begin(), out.end(), cmp);
+            }
+            else
+            {
+                pop_heap(out.begin(), out.end(), cmp);
+                out.push_back(node->objects[0]);
+                push_heap(out.begin(), out.end(), cmp);
+                maxSqDistance = glm::length2(out[0]->pos - pos);
+            }
+        }
+    }
+    else if (!node->isLeaf)
+    {
+        float delta = node->pCoord - pos[node->pAxis];
+        if (delta < 0)
+        {
+            findNearestPhotons(node->front, pos, maxSqDistance, maxCount, out);
+            if ((delta * delta) < maxSqDistance)
+                findNearestPhotons(node->rear, pos, maxSqDistance, maxCount, out);
+        }
+        else
+        {
+            findNearestPhotons(node->rear, pos, maxSqDistance, maxCount, out);
+            if (delta * delta < maxSqDistance)
+                findNearestPhotons(node->front, pos, maxSqDistance, maxCount, out);
+        }
+    }
 }
 
 Object* World::rayTraverse(const std::shared_ptr<KdTreeNode<Object*>>& node,

@@ -33,10 +33,12 @@ template <typename T> shared_ptr<KdTreeNode<T>> buildKdNode(const int& maxObject
     const function<bool(T, float, int)>& inRear,
     const function<float(const vector<T>&, const AABB&, int)>& makePartition)
 {
-    if (nodeObjects.size() <= maxObjectsPerLeaf || depth >= maxDepth)
+    if (nodeObjects.size() <= 1 ||
+        (nodeObjects.size() <= maxObjectsPerLeaf && maxObjectsPerLeaf > 0) ||
+        (depth >= maxDepth && maxDepth > 0))
     {
         auto leafNode = make_shared<KdTreeNode<T>>();
-        if (nodeObjects.size() >= 2 * maxObjectsPerLeaf)
+        if (nodeObjects.size() >= 2 * maxObjectsPerLeaf && maxObjectsPerLeaf > 0)
         {
             cout << "Large leaf warning: Making leaf node with " << nodeObjects.size() << " objects!" << endl;
         }
@@ -65,9 +67,9 @@ template <typename T> shared_ptr<KdTreeNode<T>> buildKdNode(const int& maxObject
     for (auto o : nodeObjects)
     {
         // Objects can be in both front and rear!
-        if(inFront(o, node->pCoord, node->pAxis))
+        if (inFront(o, node->pCoord, node->pAxis))
             frontObjects.push_back(o);
-        if(inRear(o, node->pCoord, node->pAxis))
+        if (inRear(o, node->pCoord, node->pAxis))
             rearObjects.push_back(o);
     }
 

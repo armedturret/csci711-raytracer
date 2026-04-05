@@ -13,7 +13,9 @@ public:
         glm::vec3 lookAt,
         glm::vec3 up,
         float filmHeight,
-        float focalLen = 1.0f);
+        float focalLen = 1.0f,
+        float maxPhotonSampleDistance = 10.0f,
+        int maxPhotonSampleCount = 15);
 
     void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1) const;
 
@@ -22,6 +24,8 @@ public:
     glm::vec3 up;
     float filmHeight;
     float focalLen;
+    float maxPhotonSampleDistance;
+    int maxPhotonSampleCount;
 
 private:
     // Function that renders one part of the entire image

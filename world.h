@@ -12,7 +12,9 @@
 class World
 {
 public:
-    World(glm::vec3 bgColor, float shadowBias = 0.0001f, float worldBoundsBias = 0.1f);
+    World(glm::vec3 bgColor, 
+        float shadowBias = 0.0001f, 
+        float worldBoundsBias = 0.1f);
 
     void add(Object* o);
 
@@ -22,12 +24,13 @@ public:
 
     void buildKdTree(int maxObjectsPerLeaf, int maxDepth);
 
-    void buildPhotonMap(int photonsInScene, int maxPhotonsPerLeaf, int maxTreeDepth, int maxReflections);
+    void buildPhotonMap(int photonsInScene, int maxReflections);
 
     // Returns a ray's irradiance
     glm::vec3 illuminate(Ray ray,
+        float maxPhotonSampleDistance,
+        int maxPhotonSampleCount,
         float minDistance = 0.0f,
-        float maxDistance = -1.0f,
         int depth = 0) const;
 
     /// <summary>
@@ -45,6 +48,13 @@ public:
         float maxDistance = -1.0f) const;
 
 private:
+    // Photons get written to out and maxSqDistance may be shrunk (but never grown)
+    void findNearestPhotons(const shared_ptr<KdTreeNode<shared_ptr<Photon>>>& node,
+        glm::vec3 pos, 
+        float& maxSqDistance, 
+        int maxCount, 
+        vector<shared_ptr<Photon>>& out) const;
+
     Object* rayTraverse(const std::shared_ptr<KdTreeNode<Object*>>& node,
         const glm::vec3& nearInt,
         const glm::vec3& farInt,
