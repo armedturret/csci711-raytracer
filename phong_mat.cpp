@@ -23,7 +23,7 @@ glm::vec3 PhongMaterial::illuminate(const RayIntersection& hit, glm::vec3 lightI
 
     // Diffuse
     glm::vec3 diff = getDiffuseCoefficients(hit) * glm::max(glm::dot(-lightIncidentDir, hit.normal), 0.0f);
-    irradiance += kd * diff;
+    irradiance += diff;
 
     // Specular
     // Reflect except ray inbound to point, returns ray outbound
