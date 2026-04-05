@@ -354,7 +354,7 @@ void World::findNearestPhotons(const shared_ptr<KdTreeNode<shared_ptr<Photon>>>&
     {
         auto cmp = [pos](const shared_ptr<Photon>& a, const shared_ptr<Photon>& b)
             {
-                return glm::length2(a->pos - pos) > glm::length2(b->pos - pos);
+                return glm::length2(a->pos - pos) < glm::length2(b->pos - pos);
             };
         // object 0 will always be safe here (we only have 1 photon per leaf)
         auto p = node->objects[0];

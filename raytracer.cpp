@@ -132,14 +132,14 @@ void renderCornellBox()
     w.add(&ceiling);
 
     // This will eventually emit light
-    auto light_box = makePlane(
+    auto lightBox = makePlane(
         glm::vec3(343.0f, 548.0f, 227.0f),
         glm::vec3(213.0f, 548.0f, 227.0f),
         glm::vec3(213.0f, 548.0f, 332.0f),
         glm::vec3(343.0f, 548.0f, 332.0f),
         &whiteMat
     );
-    //w.add(&light_box);
+    w.add(&lightBox);
 
     auto back = makePlane(
         glm::vec3(0.0f, 0.0f, 559.2f),
@@ -184,7 +184,7 @@ void renderCornellBox()
     w.buildKdTree(20, 36);
 
     // Generate photon map
-    w.buildPhotonMap(100000, 500);
+    w.buildPhotonMap(10000, 500);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),

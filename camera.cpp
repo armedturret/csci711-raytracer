@@ -102,8 +102,6 @@ void Camera::render(const World& world,
             maxIrradiance = glm::max(ir[c], maxIrradiance);
         }
     }
-    // TODO: remove this and replace w/ proper tone mapping (this is so dumb)
-    maxIrradiance = 0.0001f;
 
     // write the irradiances to the image data
     for (int i = 0; i < irradianceMap.size(); i++)
