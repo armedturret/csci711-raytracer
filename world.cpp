@@ -149,7 +149,6 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
 
     random_device rd{};
     mt19937 gen{ rd() };
-    normal_distribution<float> gauss{ 0.0f, 1.0f };
     uniform_real_distribution<float> refDist(0.0f, 1.0f);
 
     for (auto l : lights)
@@ -161,7 +160,7 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
         // TODO: divide photons up by relative brightnesses instead of all photons on every light source
         for (int i = 0; i < photonsInScene; i++)
         {
-            glm::vec3 dir = Util::randomDirection(gen, gauss);
+            glm::vec3 dir = Util::randomDirection(gen);
 
             RayIntersection hit;
             Ray r{ l->position, dir };
@@ -203,7 +202,7 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
                     glm::vec3 diffDir(0.0f);
                     do
                     {
-                        diffDir = Util::randomDirection(gen, gauss);
+                        diffDir = Util::randomDirection(gen);
                     } while (glm::dot(hit.normal, diffDir) <= 0.0f);
                     r.direction = diffDir;
                     indirect = true;

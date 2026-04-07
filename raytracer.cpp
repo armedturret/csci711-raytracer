@@ -101,7 +101,7 @@ void renderCornellBox()
 
     // Lights
     // TODO: swap from a point light to a square light
-    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(100.0f, 100.0f, 100.0f) };
     w.add(&pointLight);
 
     // Materials
@@ -184,7 +184,7 @@ void renderCornellBox()
     w.buildKdTree(20, 36);
 
     // Generate photon map
-    w.buildPhotonMap(100000, 500);
+    w.buildPhotonMap(10000, 500);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),
@@ -192,8 +192,8 @@ void renderCornellBox()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.025f,
         0.035f,
-        30.0f,
-        100);
+        20.0f,
+        50);
     c.render(w, "cornell_box.png", 512, 512, false, 1);
 }
 
