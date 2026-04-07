@@ -151,14 +151,23 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
     mt19937 gen{ rd() };
     uniform_real_distribution<float> refDist(0.0f, 1.0f);
 
+    // distribute photons amongst light sources
+    float totalPower = 0.0f;
     for (auto l : lights)
     {
-        glm::vec3 startPhotonPower = l->power / static_cast<float>(photonsInScene);
+        // gonna take a hacky approach and average power
+        // most lights are pure white anyway
+        totalPower += (l->power.x + l->power.y + l->power.z) / 3.0f;
+    }
+
+    for (auto l : lights)
+    {
+        float avgLightPower = (l->power.x + l->power.y + l->power.z) / 3.0f;
+        int photonsForLight = static_cast<int>(static_cast<float>(photonsInScene) * avgLightPower / totalPower);
+        glm::vec3 startPhotonPower = l->power / static_cast<float>(photonsForLight);
 
         // TODO: more types than point lights (see siggraph course on how square lights emit)
-        // Taken from this post: https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
-        // TODO: divide photons up by relative brightnesses instead of all photons on every light source
-        for (int i = 0; i < photonsInScene; i++)
+        for (int i = 0; i < photonsForLight; i++)
         {
             glm::vec3 dir = Util::randomDirection(gen);
 
