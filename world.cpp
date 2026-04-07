@@ -322,7 +322,10 @@ glm::vec3 World::illuminate(Ray ray,
             // Min distance is non-zero to prevent self intersection
             if (!raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin)))
             {
-                irradiance += o->material->illuminate(hit, glm::normalize(hit.position - l->position), l->power);
+                // We need to apply attenuation here since normally inverse square law would reduce light by this pint
+                float att = 1.0f / glm::length2(l->position - hit.position);
+                irradiance += att * o->material->illuminateDiffuse(hit, glm::normalize(hit.position - l->position), l->power);
+                irradiance += att * o->material->illuminateSpecular(hit, glm::normalize(hit.position - l->position), l->power);
             }
         }
 

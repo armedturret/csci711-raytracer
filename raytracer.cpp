@@ -101,7 +101,7 @@ void renderCornellBox()
 
     // Lights
     // TODO: swap from a point light to a square light
-    Light pointLight{ glm::vec3(300.0f, 450.0f, 300.0f), glm::vec3(100.0f, 100.0f, 100.0f) };
+    Light pointLight{ glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(100.0f, 100.0f, 100.0f) };
     w.add(&pointLight);
 
     // Materials
@@ -192,7 +192,7 @@ void renderCornellBox()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.025f,
         0.035f,
-        20.0f,
+        50.0f,
         50);
     c.render(w, "cornell_box.png", 512, 512, false, 1);
 }
