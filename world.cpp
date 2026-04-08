@@ -9,6 +9,7 @@
 #endif
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/constants.hpp>
 
 #include "util.h"
@@ -166,10 +167,14 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
         int photonsForLight = static_cast<int>(static_cast<float>(photonsInScene) * avgLightPower / totalPower);
         glm::vec3 startPhotonPower = l->power / static_cast<float>(photonsForLight);
 
-        // TODO: more types than point lights (see siggraph course on how square lights emit)
         for (int i = 0; i < photonsForLight; i++)
         {
-            glm::vec3 dir = Util::randomDirection(gen);
+            glm::vec3 dir(1.0f);
+
+            do
+            {
+                dir = Util::randomDirection(gen);
+            } while (l->isSpotLight && glm::degrees<float>(glm::angle(dir, l->dir)) > l->angle);
 
             RayIntersection hit;
             Ray r{ l->position, dir };
@@ -310,6 +315,7 @@ glm::vec3 World::illuminate(Ray ray,
 
         vector<shared_ptr<Photon>> nearestPhotons;
         float sampleSqDist = maxPhotonSampleDistance * maxPhotonSampleDistance;
+        // TODO: uncomment
         findNearestPhotons(rootPhotonNode, hit.position, sampleSqDist, maxPhotonSampleCount, nearestPhotons);
 
         for (auto p : nearestPhotons)
@@ -325,6 +331,14 @@ glm::vec3 World::illuminate(Ray ray,
         for (auto l : lights)
         {
             shadowRay.direction = glm::normalize(l->position - hit.position);
+
+            // check if the spotlight is even visible from this position
+            if (l->isSpotLight)
+            {
+                float angle = glm::degrees<float>(glm::angle(-shadowRay.direction, l->dir));
+                if (angle > l->angle)
+                    continue;
+            }
 
             RayIntersection intersection;
             // Cast a ray from intersection point to a light and see if anything in between

@@ -40,7 +40,7 @@ void renderWhitheadScene()
     World w(glm::vec3(0.0f, 0.796f, 0.82f));
 
     // Lights
-    Light pointLight{ glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f) };
+    Light pointLight(glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f));
     w.add(&pointLight);
 
     // Materials
@@ -100,8 +100,7 @@ void renderCornellBox()
     World w(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
 
     // Lights
-    // TODO: swap from a point light to a square light
-    Light pointLight{ glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(100.0f, 100.0f, 100.0f) };
+    Light pointLight(glm::vec3(300.0f, 300.0f, 300.0f), glm::vec3(100.0f, 100.0f, 100.0f), true, glm::vec3(0.0f, -1.0f, 0.0f), 45.0f);
     w.add(&pointLight);
 
     // Materials
@@ -130,16 +129,6 @@ void renderCornellBox()
         &whiteMat
     );
     w.add(&ceiling);
-
-    // This will eventually emit light
-    auto lightBox = makePlane(
-        glm::vec3(343.0f, 548.0f, 227.0f),
-        glm::vec3(213.0f, 548.0f, 227.0f),
-        glm::vec3(213.0f, 548.0f, 332.0f),
-        glm::vec3(343.0f, 548.0f, 332.0f),
-        &whiteMat
-    );
-    w.add(&lightBox);
 
     auto back = makePlane(
         glm::vec3(0.0f, 0.0f, 559.2f),
@@ -184,7 +173,7 @@ void renderCornellBox()
     w.buildKdTree(20, 36);
 
     // Generate photon map
-    w.buildPhotonMap(10000, 500);
+    w.buildPhotonMap(0, 100);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),
