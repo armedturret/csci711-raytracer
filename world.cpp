@@ -213,11 +213,11 @@ void World::buildPhotonMap(int photonsInScene, int maxReflections)
 
                     r.origin = hit.position;
                     // Choose a random direction in a sphere until in same hemisphere as normal
-                    glm::vec3 diffDir(0.0f);
-                    do
+                    glm::vec3 diffDir = Util::randomDirection(gen);
+                    if (glm::dot(hit.normal, diffDir) <= 0.0f)
                     {
-                        diffDir = Util::randomDirection(gen);
-                    } while (glm::dot(hit.normal, diffDir) <= 0.0f);
+                        diffDir = -diffDir;
+                    }
                     r.direction = diffDir;
                     indirect = true;
                 }

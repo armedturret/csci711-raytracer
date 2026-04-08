@@ -184,12 +184,12 @@ void renderCornellBox()
         0.035f,
         30.0f,
         50);
-    c.render(w, "cornell_box.png", 512, 512, false, 1);
+    c.render(w, "cornell_box.png", 512, 512, false, 16);
 }
 
 int main()
 {
-    renderWhitheadScene();
+    renderCornellBox();
 
     cout << "Press a key to continue..." << endl;
     string a;
