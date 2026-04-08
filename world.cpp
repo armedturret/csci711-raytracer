@@ -294,11 +294,7 @@ glm::vec3 World::illuminate(Ray ray,
     float minDistance,
     int depth) const
 {
-    if (!rootPhotonNode)
-    {
-        cout << "Photon map not built! Aborting..." << endl;
-        return glm::vec3(0.0f);
-    }
+    bool photonmapBuilt = rootPhotonNode != nullptr;
 
     RayIntersection hit;
     Object* o = raycast(ray, hit, minDistance, -1.0f);
@@ -306,23 +302,25 @@ glm::vec3 World::illuminate(Ray ray,
     {
         glm::vec3 irradiance(0.0f);
 
-        // Indirect Illumination
-        // outgoing radiance (what we're trying to find = emitted light + reflected
-        // emitted only matters for glowing objects (i.e. the sun or a lightbulb)
-        // reflected is estimated from the photon map and is (1 / pi * r^2) * the
-        // sum of the brdf * sampled photons power
-        // where r is the radius of the photon sample sphere (assumes flat locality)
-
-        vector<shared_ptr<Photon>> nearestPhotons;
-        float sampleSqDist = maxPhotonSampleDistance * maxPhotonSampleDistance;
-        // TODO: uncomment
-        findNearestPhotons(rootPhotonNode, hit.position, sampleSqDist, maxPhotonSampleCount, nearestPhotons);
-
-        for (auto p : nearestPhotons)
+        if (photonmapBuilt)
         {
-            irradiance += o->material->illuminateDiffuse(hit, p->incidentDirection, p->power);
+            // Indirect Illumination
+            // outgoing radiance (what we're trying to find = emitted light + reflected
+            // emitted only matters for glowing objects (i.e. the sun or a lightbulb)
+            // reflected is estimated from the photon map and is (1 / pi * r^2) * the
+            // sum of the brdf * sampled photons power
+            // where r is the radius of the photon sample sphere (assumes flat locality)
+
+            vector<shared_ptr<Photon>> nearestPhotons;
+            float sampleSqDist = maxPhotonSampleDistance * maxPhotonSampleDistance;
+            findNearestPhotons(rootPhotonNode, hit.position, sampleSqDist, maxPhotonSampleCount, nearestPhotons);
+
+            for (auto p : nearestPhotons)
+            {
+                irradiance += o->material->illuminateDiffuse(hit, p->incidentDirection, p->power);
+            }
+            irradiance /= (glm::pi<float>() * sampleSqDist);
         }
-        irradiance /= (glm::pi<float>() * sampleSqDist);
 
         // Direct illumination
         Ray shadowRay;

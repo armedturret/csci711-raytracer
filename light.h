@@ -17,7 +17,7 @@ struct Light
 
     Light(glm::vec3 position,
         glm::vec3 power,
-        bool isSpotLight = true,
+        bool isSpotLight = false,
         glm::vec3 dir = glm::vec3(1.0f),
         float angle = 60.0f) :
         position(position),

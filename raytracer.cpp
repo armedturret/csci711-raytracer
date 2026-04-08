@@ -37,10 +37,10 @@ void renderWhitheadScene()
 {
     cout << "Setting up world..." << endl;
 
-    World w(glm::vec3(0.0f, 0.796f, 0.82f));
+    World w(glm::vec3(0.0f, 0.0f, 0.0f));
 
     // Lights
-    Light pointLight(glm::vec3(0.757f, 1.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f));
+    Light pointLight(glm::vec3(0.757f, 2.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f));
     w.add(&pointLight);
 
     // Materials
@@ -50,9 +50,10 @@ void renderWhitheadScene()
     glm::vec3 blue = glm::vec3(0.0f, 0.0f, 1.0f);
     glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
-    CheckerMaterial planeMat(yellow, red, 1.0f / 16.0f, white, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
-    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 0.0f, 0.0f);
-    PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.5f, 0.5f, 15.0f, 1.0f, 0.0f);
+    CheckerMaterial planeMat(yellow, red, 1.0f / 16.0f, white, 0.5f, 0.2f, 1.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.0f, 0.5f, 15.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.0f, 0.9f, 15.0f, 1.0f, 0.0f);
+    PhongColorMaterial rabbitMat(glm::vec3(0.361f), white, 0.5f, 0.2f, 15.0f, 0.0f, 0.0f);
 
     // Basic objects
     Sphere s1(&sphere1Mat,
@@ -62,7 +63,7 @@ void renderWhitheadScene()
         glm::vec3(1.801f, 0.537f, -1.723f),
         0.4f);
     //w.add(&s1);
-    //w.add(&s2);
+    w.add(&s2);
 
     Mesh plane = makePlane(
         glm::vec3(0.0, 0.0, 0.0f),
@@ -75,9 +76,9 @@ void renderWhitheadScene()
 
     // Rabbit addon to whithead scene
     glm::mat4 rabbitT(1.0f);
-    rabbitT = glm::translate(rabbitT, glm::vec3(1.75f, 0.0f, -1.0f));
+    rabbitT = glm::translate(rabbitT, glm::vec3(0.75f, 0.0f, -1.0f));
     rabbitT = glm::scale(rabbitT, glm::vec3(5.0f));
-    Mesh rabbit(&sphere1Mat, rabbitT, "bun_zipper.ply");
+    Mesh rabbit(&rabbitMat, rabbitT, "bun_zipper.ply");
     w.add(&rabbit);
 
     // Build KD Tree before rendering
@@ -89,7 +90,7 @@ void renderWhitheadScene()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.10f,
         0.1f);
-    c.render(w, "whithead_scene.png", 960, 540, false, 1);
+    c.render(w, "whithead_scene.png", 960, 540, false, 16);
 }
 
 void renderCornellBox()
@@ -188,7 +189,7 @@ void renderCornellBox()
 
 int main()
 {
-    renderCornellBox();
+    renderWhitheadScene();
 
     cout << "Press a key to continue..." << endl;
     string a;
