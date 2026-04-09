@@ -16,7 +16,7 @@
 
 using namespace std;
 
-const int MAX_ILLUMINATE_DEPTH = 4;
+const int MAX_ILLUMINATE_DEPTH = 8;
 
 bool isObjectInFrontOfPCoord(Object* o, float pCoord, int pAxis)
 {
@@ -340,11 +340,31 @@ glm::vec3 World::illuminate(Ray ray,
 
             RayIntersection intersection;
             // Cast a ray from intersection point to a light and see if anything in between
+            // Needs to be done repeatedly for transparent objects
+            float lightTransmission = 1.0f;
+            Object* hitObject;
+            do
+            {
+                hitObject = raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin));
+
+                if (hitObject != nullptr)
+                {
+                    // Only apply strength reduction on front face intersection
+                    // This is DEFINITELY not how refraction works, but shush
+                    // This is better done by a photon map or path tracing
+                    if (hitObject->material->kt > 0.0f &&
+                        glm::dot(intersection.normal, shadowRay.direction) < 0.0f)
+                        lightTransmission *= hitObject->material->kt;
+
+                    shadowRay.origin = intersection.position;
+                }
+            } while (hitObject != nullptr && hitObject->material->kt > 0.0f);
+
             // Min distance is non-zero to prevent self intersection
-            if (!raycast(shadowRay, intersection, shadowBias, glm::distance(l->position, shadowRay.origin)))
+            if (hitObject == nullptr)
             {
                 // We need to apply attenuation here since normally inverse square law would reduce light by this pint
-                float att = 1.0f / glm::length2(l->position - hit.position);
+                float att = 1.0f / glm::length2(l->position - hit.position) * lightTransmission;
                 irradiance += att * o->material->illuminateDiffuse(hit, glm::normalize(hit.position - l->position), l->power);
                 irradiance += att * o->material->illuminateSpecular(hit, glm::normalize(hit.position - l->position), l->power);
             }
@@ -359,6 +379,47 @@ glm::vec3 World::illuminate(Ray ray,
                 reflectedRay.origin = hit.position;
                 reflectedRay.direction = glm::normalize(glm::reflect(ray.direction, hit.normal));
                 irradiance += o->material->kr * illuminate(reflectedRay, maxPhotonSampleDistance, maxPhotonSampleCount, shadowBias, depth + 1);
+            }
+
+            if (o->material->kt > 0.0f)
+            {
+                Ray transmissionRay;
+                transmissionRay.origin = hit.position;
+
+                // Assume that one of the mediums is air
+                float ni = 1.0f;
+                float nt = o->material->indexOfRefraction;
+                glm::vec3 incident = hit.incidentDir;
+                glm::vec3 normal = hit.normal;
+                float kt = o->material->kt;
+
+                // check if we're a backface or not
+                if (glm::dot(hit.normal, hit.incidentDir) > 0.0f)
+                {
+                    // backface, swap normal
+                    normal = -hit.normal;
+                    ni = nt;
+                    nt = 1.0f;
+
+                    // only reduce transparency component when entering the medium
+                    kt = 1.0f;
+                }
+
+                float cosTheta = glm::dot(-incident, normal);
+                float sinThetaSquared = pow((ni / nt), 2.0f) * (1.0f - cosTheta * cosTheta);
+
+                if (1.0f - sinThetaSquared <= 0.0f)
+                {
+                    // Total internal reflection
+                    transmissionRay.direction = glm::normalize(glm::reflect(incident, hit.normal));
+                }
+                else
+                {
+                    transmissionRay.direction = (ni / nt) * incident + ((ni / nt) * cosTheta - sqrt(1.0f - sinThetaSquared)) * normal;
+                    transmissionRay.direction = glm::normalize(transmissionRay.direction);
+                }
+
+                irradiance += kt * illuminate(transmissionRay, maxPhotonSampleDistance, maxPhotonSampleCount, shadowBias, depth + 1);
             }
         }
 

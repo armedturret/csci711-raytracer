@@ -11,7 +11,8 @@ public:
         float ks,
         float ke,
         float kr,
-        float kt);
+        float kt,
+        float indexOfRefraction = 1.0f);
 
     glm::vec3 getDiffuseColor(const RayIntersection& hit) override;
 

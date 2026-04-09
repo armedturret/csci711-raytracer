@@ -51,7 +51,7 @@ void renderWhitheadScene()
     glm::vec3 yellow = glm::vec3(0.949f, 1.0f, 0.0f);
 
     CheckerMaterial planeMat(yellow, red, 1.0f / 16.0f, white, 0.5f, 0.2f, 1.0f, 0.0f, 0.0f);
-    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.0f, 0.5f, 15.0f, 0.0f, 0.0f);
+    PhongColorMaterial sphere1Mat(glm::vec3(0.361f), white, 0.0f, 0.3f, 15.0f, 0.0f, 0.7f, 1.5f);
     PhongColorMaterial sphere2Mat(glm::vec3(0.361f), white, 0.0f, 0.9f, 15.0f, 1.0f, 0.0f);
     PhongColorMaterial rabbitMat(glm::vec3(0.361f), white, 0.5f, 0.2f, 15.0f, 0.0f, 0.0f);
 
@@ -62,7 +62,7 @@ void renderWhitheadScene()
     Sphere s2(&sphere2Mat,
         glm::vec3(1.801f, 0.537f, -1.723f),
         0.4f);
-    //w.add(&s1);
+    w.add(&s1);
     w.add(&s2);
 
     Mesh plane = makePlane(
@@ -79,7 +79,7 @@ void renderWhitheadScene()
     rabbitT = glm::translate(rabbitT, glm::vec3(0.75f, 0.0f, -1.0f));
     rabbitT = glm::scale(rabbitT, glm::vec3(5.0f));
     Mesh rabbit(&rabbitMat, rabbitT, "bun_zipper.ply");
-    w.add(&rabbit);
+    //w.add(&rabbit);
 
     // Build KD Tree before rendering
     w.buildKdTree(20, 36);
@@ -90,7 +90,7 @@ void renderWhitheadScene()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.10f,
         0.1f);
-    c.render(w, "whithead_scene.png", 960, 540, false, 16);
+    c.render(w, "whithead_scene.png", 960, 540, false, 1);
 }
 
 void renderCornellBox()
@@ -189,7 +189,7 @@ void renderCornellBox()
 
 int main()
 {
-    renderCornellBox();
+    renderWhitheadScene();
 
     cout << "Press a key to continue..." << endl;
     string a;

@@ -7,7 +7,8 @@ PhongMaterial::PhongMaterial(glm::vec3 specular,
     float ks,
     float ke,
     float kr,
-    float kt) :
+    float kt,
+    float indexOfRefraction) :
     colorSpecular(specular),
     kd(kd),
     ks(ks),
@@ -15,6 +16,7 @@ PhongMaterial::PhongMaterial(glm::vec3 specular,
 {
     this->kr = kr;
     this->kt = kt;
+    this->indexOfRefraction = indexOfRefraction;
 }
 
 glm::vec3 PhongMaterial::illuminateDiffuse(const RayIntersection& hit, glm::vec3 lightIncidentDir, glm::vec3 power)

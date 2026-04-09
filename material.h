@@ -23,4 +23,7 @@ public:
 
     // transmissive component
     float kt = 0.0f;
+
+    // index of refraction
+    float indexOfRefraction = 1.0f;
 };

@@ -6,8 +6,9 @@ PhongColorMaterial::PhongColorMaterial(glm::vec3 diffuse,
     float ks,
     float ke,
     float kr,
-    float kt) :
-    PhongMaterial(specular, kd, ks, ke, kr, kt),
+    float kt,
+    float indexOfRefraction) :
+    PhongMaterial(specular, kd, ks, ke, kr, kt, indexOfRefraction),
     diffuseColor(diffuse)
 {
 }
