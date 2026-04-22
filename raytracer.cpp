@@ -90,7 +90,9 @@ void renderWhitheadScene()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.10f,
         0.1f);
-    c.render(w, "whithead_scene.png", 960, 540, false, 1);
+    c.render(w, "whithead_scene_linear.png", 960, 540, false, 1, ToneReproduction::LINEAR);
+    c.render(w, "whithead_scene_ward.png", 960, 540, false, 1, ToneReproduction::WARD);
+    c.render(w, "whithead_scene_reinhard.png", 960, 540, false, 1, ToneReproduction::REINHARD);
 }
 
 void renderCornellBox()

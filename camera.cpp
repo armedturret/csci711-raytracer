@@ -34,7 +34,9 @@ void Camera::render(const World& world,
     int width,
     int height,
     bool superSample,
-    int threadCount) const
+    int threadCount,
+    ToneReproduction reproMethod,
+    float ldmax) const
 {
     cout << "Rendering " << filename << "..." << endl;
     auto startTime = chrono::system_clock::now();
@@ -44,9 +46,11 @@ void Camera::render(const World& world,
 
     auto image = vector<uint8_t>(width * height * 3);
     auto irradianceMap = vector<glm::vec3>(width * height);
+    auto luminanceMap = vector<float>(width * height);
     float pixelSize = filmHeight / static_cast<float>(height);
     float filmWidth = filmHeight * static_cast<float>(width) / static_cast<float>(height);
 
+    // Step 1 - Calculate irradiance
     if (threadCount == 1)
     {
         // Just render the full thing synchronously (useful for debugging)
@@ -93,22 +97,62 @@ void Camera::render(const World& world,
         }
     }
 
-    float maxIrradiance = 0.0f;
-    // find the maxium irradiance in the entire image (accross all channels)
-    for (auto ir : irradianceMap)
-    {
-        for (int c = 0; c < 3; c++)
-        {
-            maxIrradiance = glm::max(ir[c], maxIrradiance);
-        }
-    }
-
-    // write the irradiances to the image data
+    float logAverageLum = 0.0f;
+    // Step 2 - Calculate overall luminance (assumes CRT color space) and log-average
     for (int i = 0; i < irradianceMap.size(); i++)
     {
-        image[i * 3] = (uint8_t)(glm::clamp(irradianceMap[i].r / maxIrradiance, 0.0f, 1.0f) * 255.0f);
-        image[i * 3 + 1] = (uint8_t)(glm::clamp(irradianceMap[i].g / maxIrradiance, 0.0f, 1.0f) * 255.0f);
-        image[i * 3 + 2] = (uint8_t)(glm::clamp(irradianceMap[i].b / maxIrradiance, 0.0f, 1.0f) * 255.0f);
+        luminanceMap[i] = 0.27f * irradianceMap[i].r
+            + 0.67f * irradianceMap[i].g
+            + 0.06f * irradianceMap[i].b;
+        logAverageLum += log(0.0001f + luminanceMap[i]);
+    }
+    logAverageLum = logAverageLum / (width * height);
+    logAverageLum = exp(logAverageLum);
+
+    // Step 3 - Apply tone reproduction operator
+    switch (reproMethod)
+    {
+    case ToneReproduction::LINEAR:
+    {
+        float maxIrradiance = 0.0f;
+        // find the maxium irradiance in the entire image (accross all channels)
+        for (auto ir : irradianceMap)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                maxIrradiance = glm::max(ir[c], maxIrradiance);
+            }
+        }
+
+        for (int i = 0; i < irradianceMap.size(); i++)
+        {
+            irradianceMap[i] = irradianceMap[i] / maxIrradiance;
+        }
+    }
+    break;
+    case ToneReproduction::WARD:
+    {
+        float sf = (1.219f + pow((ldmax / 2), 0.4f))
+            / (1.219f + pow(logAverageLum, 0.4f));
+        sf = pow(sf, 2.5f);
+
+        for (int i = 0; i < irradianceMap.size(); i++)
+        {
+            irradianceMap[i] = irradianceMap[i] * sf;
+        }
+    }
+    break;
+    default:
+        cout << "Operator not implemented!" << endl;
+        break;
+    }
+
+    // Step 4 - Scale by LD max and write to image data
+    for (int i = 0; i < irradianceMap.size(); i++)
+    {
+        image[i * 3] = (uint8_t)(glm::clamp(irradianceMap[i].r / ldmax, 0.0f, 1.0f) * 255.0f);
+        image[i * 3 + 1] = (uint8_t)(glm::clamp(irradianceMap[i].g / ldmax, 0.0f, 1.0f) * 255.0f);
+        image[i * 3 + 2] = (uint8_t)(glm::clamp(irradianceMap[i].b / ldmax, 0.0f, 1.0f) * 255.0f);
     }
 
     stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);

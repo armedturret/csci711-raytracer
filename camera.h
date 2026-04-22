@@ -6,6 +6,8 @@
 
 #include "world.h"
 
+enum class ToneReproduction { LINEAR, WARD, REINHARD };
+
 class Camera
 {
 public:
@@ -17,7 +19,14 @@ public:
         float maxPhotonSampleDistance = 10.0f,
         int maxPhotonSampleCount = 15);
 
-    void render(const World& world, std::string filename, int width, int height, bool superSample = false, int threadCount = 1) const;
+    void render(const World& world,
+        std::string filename,
+        int width,
+        int height,
+        bool superSample = false,
+        int threadCount = 1,
+        ToneReproduction reproMethod = ToneReproduction::LINEAR,
+        float ldmax = 1.0f) const;
 
     glm::vec3 position;
     glm::vec3 lookAt;
