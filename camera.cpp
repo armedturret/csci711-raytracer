@@ -104,7 +104,7 @@ void Camera::render(const World& world,
         luminanceMap[i] = 0.27f * irradianceMap[i].r
             + 0.67f * irradianceMap[i].g
             + 0.06f * irradianceMap[i].b;
-        logAverageLum += log(0.0001f + luminanceMap[i]);
+        logAverageLum += log(0.00000001f + luminanceMap[i]);
     }
     logAverageLum = logAverageLum / (width * height);
     logAverageLum = exp(logAverageLum);
@@ -132,13 +132,26 @@ void Camera::render(const World& world,
     break;
     case ToneReproduction::WARD:
     {
-        float sf = (1.219f + pow((ldmax / 2), 0.4f))
+        float sf = (1.219f + pow((ldmax / 2.0f), 0.4f))
             / (1.219f + pow(logAverageLum, 0.4f));
         sf = pow(sf, 2.5f);
 
         for (int i = 0; i < irradianceMap.size(); i++)
         {
             irradianceMap[i] = irradianceMap[i] * sf;
+        }
+    }
+    break;
+    case ToneReproduction::REINHARD:
+    {
+        float a = 0.18f;
+
+        for (int i = 0; i < irradianceMap.size(); i++)
+        {
+            // calculate scaled luminance using logAverage as reference
+            glm::vec3 scaledLum = a / logAverageLum * irradianceMap[i];
+            glm::vec3 reflectance = scaledLum / (glm::vec3(1.0f) + scaledLum);
+            irradianceMap[i] = reflectance * ldmax;
         }
     }
     break;
