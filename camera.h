@@ -26,7 +26,8 @@ public:
         bool superSample = false,
         int threadCount = 1,
         ToneReproduction reproMethod = ToneReproduction::LINEAR,
-        float ldmax = 1.0f) const;
+        float ldmax = 1.0f,
+        glm::ivec2 refPixel = { -1, -1 }) const;
 
     glm::vec3 position;
     glm::vec3 lookAt;

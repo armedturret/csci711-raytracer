@@ -36,7 +36,8 @@ void Camera::render(const World& world,
     bool superSample,
     int threadCount,
     ToneReproduction reproMethod,
-    float ldmax) const
+    float ldmax,
+    glm::ivec2 refPixel) const
 {
     cout << "Rendering " << filename << "..." << endl;
     auto startTime = chrono::system_clock::now();
@@ -109,6 +110,13 @@ void Camera::render(const World& world,
     logAverageLum = logAverageLum / (width * height);
     logAverageLum = exp(logAverageLum);
 
+    float refLuminance = logAverageLum;
+    if (refPixel.x >= 0 && refPixel.y >= 0)
+    {
+        // Ref pixel is used for grabbing luminance from a specific area
+        refLuminance = luminanceMap[refPixel.x + refPixel.y * width];
+    }
+
     // Step 3 - Apply tone reproduction operator
     switch (reproMethod)
     {
@@ -133,7 +141,7 @@ void Camera::render(const World& world,
     case ToneReproduction::WARD:
     {
         float sf = (1.219f + pow((ldmax / 2.0f), 0.4f))
-            / (1.219f + pow(logAverageLum, 0.4f));
+            / (1.219f + pow(refLuminance, 0.4f));
         sf = pow(sf, 2.5f);
 
         for (int i = 0; i < irradianceMap.size(); i++)
@@ -150,7 +158,7 @@ void Camera::render(const World& world,
         for (int i = 0; i < irradianceMap.size(); i++)
         {
             // calculate scaled luminance using logAverage as reference
-            glm::vec3 scaledLum = a / logAverageLum * irradianceMap[i];
+            glm::vec3 scaledLum = a / refLuminance * irradianceMap[i];
             glm::vec3 reflectance = scaledLum / (glm::vec3(1.0f) + scaledLum);
             irradianceMap[i] = reflectance * ldmax;
         }

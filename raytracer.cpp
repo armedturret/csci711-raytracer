@@ -37,10 +37,10 @@ void renderWhitheadScene()
 {
     cout << "Setting up world..." << endl;
 
-    World w(glm::vec3(0.0001f, 0.0001f, 0.0001f));
+    World w(glm::vec3(0.0f, 0.0f, 0.0f));
 
     // Lights
-    Light pointLight(glm::vec3(0.757f, 2.198f, 0.475f), glm::vec3(10.0f, 10.0f, 10.0f));
+    Light pointLight(glm::vec3(0.757f, 2.198f, 0.475f), glm::vec3(100.0f, 100.0f, 100.0f));
     w.add(&pointLight);
 
     // Materials
@@ -90,9 +90,11 @@ void renderWhitheadScene()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.10f,
         0.1f);
+    float ldmax = 1.0f;
+    glm::ivec2 referencePixel = glm::ivec2(840, 360);
     c.render(w, "whithead_scene_linear.png", 960, 540, false, 1, ToneReproduction::LINEAR);
-    c.render(w, "whithead_scene_ward.png", 960, 540, false, 1, ToneReproduction::WARD);
-    c.render(w, "whithead_scene_reinhard.png", 960, 540, false, 1, ToneReproduction::REINHARD);
+    c.render(w, "whithead_scene_ward.png", 960, 540, false, 1, ToneReproduction::WARD, ldmax, referencePixel);
+    c.render(w, "whithead_scene_reinhard.png", 960, 540, false, 1, ToneReproduction::REINHARD, ldmax, referencePixel);
 }
 
 void renderCornellBox()
