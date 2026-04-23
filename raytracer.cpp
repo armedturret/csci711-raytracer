@@ -37,10 +37,10 @@ void renderWhitheadScene()
 {
     cout << "Setting up world..." << endl;
 
-    World w(glm::vec3(0.0f, 0.0f, 0.0f));
+    World w(glm::vec3(0.0001f, 0.0001f, 0.0001f));
 
     // Lights
-    Light pointLight(glm::vec3(0.757f, 2.198f, 0.475f), glm::vec3(1.0f, 1.0f, 1.0f));
+    Light pointLight(glm::vec3(0.757f, 2.198f, 0.475f), glm::vec3(10.0f, 10.0f, 10.0f));
     w.add(&pointLight);
 
     // Materials
@@ -103,7 +103,7 @@ void renderCornellBox()
     World w(glm::vec3(0.0f, 0.0f, 0.0f), 0.1f);
 
     // Lights
-    Light pointLight(glm::vec3(300.0f, 500.0f, 300.0f), glm::vec3(100.0f, 100.0f, 100.0f), true, glm::vec3(0.0f, -1.0f, 0.0f), 30.0f);
+    Light pointLight(glm::vec3(300.0f, 500.0f, 300.0f), glm::vec3(100000.0f, 100000.0f, 100000.0f), true, glm::vec3(0.0f, -1.0f, 0.0f), 30.0f);
     w.add(&pointLight);
 
     // Materials
@@ -176,7 +176,7 @@ void renderCornellBox()
     w.buildKdTree(20, 36);
 
     // Generate photon map
-    w.buildPhotonMap(100000, 100);
+    w.buildPhotonMap(10000, 100);
 
     // Render scene
     Camera c(glm::vec3(278.0f, 273.0f, -750.0f),
@@ -184,9 +184,10 @@ void renderCornellBox()
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.025f,
         0.035f,
-        30.0f,
+        50.0f,
         50);
-    c.render(w, "cornell_box.png", 512, 512, false, 16);
+    c.render(w, "cornell_box_ward.png", 512, 512, true, 16, ToneReproduction::WARD);
+    c.render(w, "cornell_box_reinhard.png", 512, 512, true, 16, ToneReproduction::REINHARD);
 }
 
 int main()

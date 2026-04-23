@@ -97,13 +97,13 @@ void Camera::render(const World& world,
         }
     }
 
+    auto colorSpace = glm::vec3(0.27f, 0.67f, 0.06f);
     float logAverageLum = 0.0f;
-    // Step 2 - Calculate overall luminance (assumes CRT color space) and log-average
+    // Step 2 - Calculate overall luminance (assumes CRT color space), log-average, and convert irradiance to luminance
     for (int i = 0; i < irradianceMap.size(); i++)
     {
-        luminanceMap[i] = 0.27f * irradianceMap[i].r
-            + 0.67f * irradianceMap[i].g
-            + 0.06f * irradianceMap[i].b;
+        luminanceMap[i] = glm::dot(colorSpace, irradianceMap[i]);
+        irradianceMap[i] = colorSpace * irradianceMap[i];
         logAverageLum += log(0.00000001f + luminanceMap[i]);
     }
     logAverageLum = logAverageLum / (width * height);
@@ -144,6 +144,7 @@ void Camera::render(const World& world,
     break;
     case ToneReproduction::REINHARD:
     {
+        // Reinhard settings
         float a = 0.18f;
 
         for (int i = 0; i < irradianceMap.size(); i++)
@@ -163,9 +164,9 @@ void Camera::render(const World& world,
     // Step 4 - Scale by LD max and write to image data
     for (int i = 0; i < irradianceMap.size(); i++)
     {
-        image[i * 3] = (uint8_t)(glm::clamp(irradianceMap[i].r / ldmax, 0.0f, 1.0f) * 255.0f);
-        image[i * 3 + 1] = (uint8_t)(glm::clamp(irradianceMap[i].g / ldmax, 0.0f, 1.0f) * 255.0f);
-        image[i * 3 + 2] = (uint8_t)(glm::clamp(irradianceMap[i].b / ldmax, 0.0f, 1.0f) * 255.0f);
+        image[i * 3] = (uint8_t)(glm::clamp(irradianceMap[i].r / ldmax / colorSpace.r, 0.0f, 1.0f) * 255.0f);
+        image[i * 3 + 1] = (uint8_t)(glm::clamp(irradianceMap[i].g / ldmax / colorSpace.g, 0.0f, 1.0f) * 255.0f);
+        image[i * 3 + 2] = (uint8_t)(glm::clamp(irradianceMap[i].b / ldmax / colorSpace.b, 0.0f, 1.0f) * 255.0f);
     }
 
     stbi_write_png(filename.c_str(), width, height, 3, image.data(), 3 * width);
